@@ -9,6 +9,13 @@
   --button-secondary-hover: #f2f2f2;
   --button-secondary-border: #ebebeb;
 
+  --color-primary: #f97316;
+  --color-blue: #2563eb;
+  --color-red: #dc2626;
+  --color-green: #16a34a;
+  --color-bg: #f3f4f6;
+  --color-text: #1f2933;
+
   display: flex;
   min-height: 100vh;
   align-items: center;
