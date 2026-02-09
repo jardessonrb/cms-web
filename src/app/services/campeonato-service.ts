@@ -8,9 +8,21 @@ export interface Campeonato {
   criadoEm: string;
 }
 
+export interface Params {
+  page: number,
+  size: number
+}
+
 export const CampeonatoService = {
-  async listar(): Promise<Page<Campeonato>> {
-    const response = await api.get<Page<Campeonato>>("/campeonato");
+  async listar(parametros : Params): Promise<Page<Campeonato>> {
+    const response = await api.get<Page<Campeonato>>("/campeonato", {
+      params: parametros
+    });
+    return response.data;
+  },
+
+  async criaCampeonato(body: any): Promise<Campeonato> {
+    const response = await api.post<Campeonato>("/campeonato", body);
     return response.data;
   },
 };
