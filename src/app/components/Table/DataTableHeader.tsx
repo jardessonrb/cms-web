@@ -21,7 +21,7 @@ const styles: Record<string, React.CSSProperties> = {
         display: "grid",
         gridTemplateColumns: "2fr 1fr 1fr",
         padding: "12px",
-        backgroundColor: "var(--color-primary)",
+        // backgroundColor: "var(--color-primary)",
         color: "var(--color-text)",
         // borderRadius: "10px",
         fontWeight: 500

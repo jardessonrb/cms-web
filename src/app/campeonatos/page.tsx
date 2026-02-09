@@ -57,9 +57,9 @@ export default function CampeonatosPage() {
       </div>
       <DataTable>
         <DataTableHeader columns="3fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
-          <div>Nome</div>
-          <div>Situação</div>
-          <div style={{display: "flex", justifyContent: 'center'}}>Ações</div>
+          <div><strong>Nome</strong></div>
+          <div><strong>Situação</strong></div>
+          <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
         </DataTableHeader>
 
         <DataTableBody>

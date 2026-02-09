@@ -26,6 +26,6 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
     fontWeight: 500,
     textAlign: "center",
-    height: "40px"
+    height: "30px"
   }
 };
