@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto } from "next/font/google";
 import "./globals.css";
 import Header from "./components/header";
+import { Toaster } from "react-hot-toast";
 
 
 export const metadata: Metadata = {
@@ -38,6 +39,18 @@ export default function RootLayout({
       <body className={`${roboto.variable}`} style={styles.bodyStyle}>
         <Header />
         {children}
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: "var(--color-bg-light)",
+              color: "var(--color-text)",
+              border: "1px solid #e5e7eb",
+              height: "100px",
+              width: '30%'
+            },
+          }}
+        />
       </body>
     </html>
   );

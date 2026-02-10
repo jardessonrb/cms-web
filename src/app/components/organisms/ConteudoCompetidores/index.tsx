@@ -10,6 +10,9 @@ import { useRouter } from "next/navigation";
 import { AtletaService } from "@/app/services/atleta-service";
 import { Button } from "../../atoms/Button";
 import { Utils } from "@/app/services/utils";
+import toast from "react-hot-toast";
+import { Notify } from "@/app/lib/notify";
+import { ExceptionDefault } from "@/app/types/default";
 
 type ConteudoCompetidoresProps = {
     campeonatoId: string
@@ -23,16 +26,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     const [totalDePaginas, setTotalDePaginas] = useState(10);
     const [termoBusca, setTermoBusca] = useState<string | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [atletaForm, setAtletaForm] = useState({
-       nome: undefined,
-       apelido: undefined,
-       campeonatoId,
-       cidade: undefined,
-       dataNascimento: "2020-01-01",
-       graduacao: undefined, 
-       responsavel: undefined,
-       grupo: undefined
-    } as AtletaForm);
+    const [atletaForm, setAtletaForm] = useState(limpaAtletaForm() as AtletaForm);
 
     function mostraAtletas(atletas: AtletaListagemDto[]){
         console.log(atletas)
@@ -40,11 +34,33 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
         setAtletas(atletas);
     }
 
+    function limpaAtletaForm(){
+        return {
+            nome: undefined,
+            apelido: undefined,
+            campeonatoId,
+            cidade: undefined,
+            dataNascimento: undefined,
+            graduacao: undefined, 
+            responsavel: undefined,
+            grupo: undefined
+        }
+    }
+
     async function cadastraAtleta(){
-        const response = await AtletaService.criar(atletaForm);
-        console.log({atletaForm, response});
-        setIsModalOpen(false);
-        await carregaDados();
+        try {
+            const response = await AtletaService.criar(atletaForm);
+            Notify.success("Competidor salvo com sucesso.")
+            console.log({atletaForm, response});
+            setIsModalOpen(false);
+            setAtletaForm(limpaAtletaForm())
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`Não foi possível salvar o competidor.${exception.erros[0]}`)
+            }
+        }
     }
 
     async function carregaDadosComFiltro(){
@@ -84,7 +100,15 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                     />
                     <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
                 </div>
-                <Button mensagem="Cadastrar Novo Competidor" act={() => setIsModalOpen(true)}/>
+                <Button mensagem="Cadastrar Novo Competidor" act={() => {
+                    setIsModalOpen(true);
+                    // Notify.info("Erro ao salvar o competidor", {
+                    //     onClose: () => {
+                    //         console.log("Fechou o toast de erro.")
+                    //     },
+                    //     duration: 2000
+                    // })
+                }}/>
             </div>
             <DataTable>
                 <DataTableHeader columns="2fr 2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
@@ -153,11 +177,12 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                     value={atletaForm.cidade}
                     onChange={v => Utils.updateField(setAtletaForm, "cidade", v)}
                 />
-                {/* <Input
+                <Input
+                    type="date"
                     placeholder="Data de nascimento. Formato 01/01/2020"
                     value={atletaForm.dataNascimento}
                     onChange={v => Utils.updateField(setAtletaForm, "dataNascimento", v)}
-                /> */}
+                />
                 <Button mensagem="Cadastrar Atleta" act={cadastraAtleta} />
             </Modal>
         
