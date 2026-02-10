@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import { AtletaService } from "@/app/services/atleta-service";
 import { Button } from "../../atoms/Button";
 import { Utils } from "@/app/services/utils";
-import toast from "react-hot-toast";
 import { Notify } from "@/app/lib/notify";
 import { ExceptionDefault } from "@/app/types/default";
 import { AsyncSelect } from "../../atoms/AsyncSelect";
@@ -96,7 +95,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
 
     useEffect(() => {
         carregaDados();
-      }, [paginaAtual, termoBusca]);
+    }, [paginaAtual, termoBusca]);
 
     return (
         <div>

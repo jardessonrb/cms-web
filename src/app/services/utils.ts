@@ -12,9 +12,19 @@ export const Utils = {
     field: K,
     value: T[K]
   ) {
-    setState((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setState((prev) => ({...prev, [field]: value}));
   },
+  formataDataBR(dateTime: string | undefined): string {
+    if(!dateTime || dateTime == undefined){
+      return "";
+    }
+
+    const date = new Date(dateTime);
+
+    const dia = String(date.getDate()).padStart(2, "0");
+    const mes = String(date.getMonth() + 1).padStart(2, "0");
+    const ano = date.getFullYear();
+
+    return `${dia}/${mes}/${ano}`;
+  }
 };
