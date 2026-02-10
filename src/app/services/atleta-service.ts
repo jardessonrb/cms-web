@@ -2,6 +2,7 @@ import { api } from "./api";
 import { Page } from "../types/page";
 import { AtletaForm, AtletaListagemDto } from "../types/atleta";
 import { Utils } from "./utils";
+import { ListParams } from "../types/default";
 
 export interface Atleta {
   id: string;
@@ -12,15 +13,9 @@ export interface Atleta {
   criadoEm?: string;
 }
 
-export interface AtletaParams {
-  page: number;
-  size: number;
-  filtro?: string | undefined
-}
-
 
 export const AtletaService = {
-  async listaAtletasDoCampeonato(campeonatoId: string, params: AtletaParams): Promise<Page<AtletaListagemDto>> {
+  async listaAtletasDoCampeonato(campeonatoId: string, params: ListParams): Promise<Page<AtletaListagemDto>> {
     const paramsLimpos = Utils.removeChavesSemValor(params);
     console.log({params, paramsLimpos})
     const response = await api.get<Page<AtletaListagemDto>>(`/atleta/campeonato/${campeonatoId}`, {

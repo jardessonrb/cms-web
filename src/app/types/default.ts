@@ -4,3 +4,9 @@ export type ExceptionDefault = {
     path: string;
     erros: string[]
 }
+
+export interface ListParams {
+  page: number;
+  size: number;
+  filtro?: string | undefined
+}

@@ -19,4 +19,5 @@ export type AtletaForm = {
     grupo: string | undefined,
     graduacao: string | undefined,
     campeonatoId: string | undefined,
+    categoriaId: string | undefined,
 }

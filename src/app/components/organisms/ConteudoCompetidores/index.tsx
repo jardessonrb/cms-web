@@ -13,10 +13,17 @@ import { Utils } from "@/app/services/utils";
 import toast from "react-hot-toast";
 import { Notify } from "@/app/lib/notify";
 import { ExceptionDefault } from "@/app/types/default";
+import { AsyncSelect } from "../../atoms/AsyncSelect";
+import { CategoriaService } from "@/app/services/categoria-service";
 
 type ConteudoCompetidoresProps = {
     campeonatoId: string
 }
+
+export type SelectOption = {
+  id: string;
+  label: string;
+};
 
 export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps){
     const router = useRouter();
@@ -27,6 +34,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     const [termoBusca, setTermoBusca] = useState<string | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [atletaForm, setAtletaForm] = useState(limpaAtletaForm() as AtletaForm);
+    const [categoria, setCategoria] = useState<SelectOption | null>(null);
 
     function mostraAtletas(atletas: AtletaListagemDto[]){
         console.log(atletas)
@@ -43,13 +51,16 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             dataNascimento: undefined,
             graduacao: undefined, 
             responsavel: undefined,
-            grupo: undefined
+            grupo: undefined,
+            categoriaId: undefined
         }
     }
 
     async function cadastraAtleta(){
         try {
-            const response = await AtletaService.criar(atletaForm);
+            const atletaComCategoria = {...atletaForm, categoriaId: categoria?.id}
+            console.log(atletaComCategoria)
+            const response = await AtletaService.criar(atletaComCategoria);
             Notify.success("Competidor salvo com sucesso.")
             console.log({atletaForm, response});
             setIsModalOpen(false);
@@ -64,7 +75,6 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     }
 
     async function carregaDadosComFiltro(){
-        console.log(termoBusca)
         AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length > 3 ? termoBusca : undefined)})
             .then((page) => {
             setPaginaAtual(page.number)
@@ -102,12 +112,6 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                 </div>
                 <Button mensagem="Cadastrar Novo Competidor" act={() => {
                     setIsModalOpen(true);
-                    // Notify.info("Erro ao salvar o competidor", {
-                    //     onClose: () => {
-                    //         console.log("Fechou o toast de erro.")
-                    //     },
-                    //     duration: 2000
-                    // })
                 }}/>
             </div>
             <DataTable>
@@ -182,6 +186,19 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                     placeholder="Data de nascimento. Formato 01/01/2020"
                     value={atletaForm.dataNascimento}
                     onChange={v => Utils.updateField(setAtletaForm, "dataNascimento", v)}
+                />
+
+                <AsyncSelect
+                    placeholder="Escolher categoria"
+                    value={categoria}
+                    onSelect={setCategoria}
+                    fetchOptions={async (query) => {
+                        const page = await CategoriaService.listaCategoriasDoCampeonato(campeonatoId, {page: 0, size: 5, filtro: (query && query.length >= 3 ? query : undefined)});
+                        return page.content.map((c) => ({
+                            id: c.id,
+                            label: c.nome,
+                        }));
+                    }}
                 />
                 <Button mensagem="Cadastrar Atleta" act={cadastraAtleta} />
             </Modal>
