@@ -14,7 +14,7 @@ import { Notify } from "@/app/lib/notify";
 import { ExceptionDefault } from "@/app/types/default";
 import { AsyncSelect } from "../../atoms/AsyncSelect";
 import { CategoriaService } from "@/app/services/categoria-service";
-import { CategoriaDto } from "@/app/types/categoria";
+import { CategoriaDto, categoriaForm } from "@/app/types/categoria";
 
 type ConteudoCompetidoresProps = {
     campeonatoId: string
@@ -33,6 +33,7 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCompetidoresProps){
     const [totalDePaginas, setTotalDePaginas] = useState(10);
     const [termoBusca, setTermoBusca] = useState<string | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [categoriaForm, setCategoriaForm] = useState<categoriaForm>(iniciaCategoriaForm() as categoriaForm);
 
 
     async function carregaDadosComFiltro(){
@@ -44,6 +45,32 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCompetidoresProps){
             setCategorias(page.content)
             })
         .finally(() => setLoading(false));
+    }
+
+    function iniciaCategoriaForm(){
+        return {
+            nome: undefined,
+            campeonatoId
+        }
+    }
+
+    async function cadastraCategoria(){
+        try {
+            
+            const response = await CategoriaService.criaCategoria(categoriaForm);
+            Notify.success("Categoria criada com sucesso.")
+            setIsModalOpen(false);
+            setCategoriaForm(iniciaCategoriaForm())
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar cadastrar categoria")
+            }
+
+        }
     }
 
     async function carregaDados(){
@@ -110,9 +137,13 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCompetidoresProps){
                     />
                 }
             </div>
-            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title="Novo Competidor">
-               
-                <Button mensagem="Cadastrar Categoria" act={() => () => {}} />
+            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title="Nova Categoria">
+               <Input
+                    placeholder="Nome da categoria"
+                    value={categoriaForm.nome}
+                    onChange={v => Utils.updateField(setCategoriaForm, "nome", v)}
+                />
+                <Button mensagem="Cadastrar Categoria" act={cadastraCategoria} />
             </Modal>
         
         </div> 

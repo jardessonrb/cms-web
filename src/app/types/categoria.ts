@@ -4,3 +4,8 @@ export type CategoriaDto = {
     situacao: string
     criadoEm: string
 }
+
+export type categoriaForm = {
+    nome: string | undefined
+    campeonatoId: string
+}
