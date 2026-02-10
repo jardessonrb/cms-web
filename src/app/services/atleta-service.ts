@@ -17,7 +17,6 @@ export interface Atleta {
 export const AtletaService = {
   async listaAtletasDoCampeonato(campeonatoId: string, params: ListParams): Promise<Page<AtletaListagemDto>> {
     const paramsLimpos = Utils.removeChavesSemValor(params);
-    console.log({params, paramsLimpos})
     const response = await api.get<Page<AtletaListagemDto>>(`/atleta/campeonato/${campeonatoId}`, {
       params: paramsLimpos,
     });

@@ -8,6 +8,7 @@ import { Utils } from "@/app/services/utils";
 import { CampeonatoDetalhadoDto } from "@/app/types/campeonato";
 import { ExceptionDefault } from "@/app/types/default";
 import { useEffect, useState } from "react";
+import { ConteudoCategorias } from "../ConteudoCategorias";
 
 type Props = {
     campeonatoId: string
@@ -61,7 +62,7 @@ export default function CampeonatoDetalhe({ campeonatoId }: Props) {
       <Tab
         tabs={[
           { label: "Competidores", content: <ConteudoCompetidores  campeonatoId={campeonatoId}/> },
-          { label: "Categorias", content: <div>Conteúdo da Parte 2</div> },
+          { label: "Categorias", content: <ConteudoCategorias campeonatoId={campeonatoId} /> },
           { label: "Jurados", content: <div>Conteúdo da Parte 3</div> },
         ]}
       />

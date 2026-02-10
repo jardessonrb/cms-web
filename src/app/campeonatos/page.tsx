@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CampeonatoService, Campeonato } from "../services/campeonato-service";
+import { CampeonatoService} from "../services/campeonato-service";
 // import { Table } from "../components/Table";
 import { useRouter } from "next/navigation";
 import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../components/Table";
@@ -9,9 +9,10 @@ import { Button } from "../components/atoms/Button";
 import { Modal } from "../components/modecules/ModalBase";
 import { Input } from "../components/atoms/Input";
 import { Pagination } from "../components/modecules/Pagination";
+import { CampeonatoDto } from "../types/campeonato";
 
 export default function CampeonatosPage() {
-  const [campeonatos, setCampeonatos] = useState<Campeonato[]>([]);
+  const [campeonatos, setCampeonatos] = useState<CampeonatoDto[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -20,14 +21,12 @@ export default function CampeonatosPage() {
 
   const [nomeCampeonato, setNomeCampeonato] = useState<string | undefined>(undefined);
 
-  function mostraCampeonato(campeonatos: Campeonato[]){
-    console.log(campeonatos);
+  function mostraCampeonato(campeonatos: CampeonatoDto[]){
     setCampeonatos(campeonatos)
   }
 
   async function criaCampeonato(){
     const resultado = await CampeonatoService.criaCampeonato({nome: nomeCampeonato});
-    console.log(resultado)
     await carregaDados();
     setNomeCampeonato(undefined)
     setIsModalOpen(false);

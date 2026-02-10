@@ -36,8 +36,6 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     const [categoria, setCategoria] = useState<SelectOption | null>(null);
 
     function mostraAtletas(atletas: AtletaListagemDto[]){
-        console.log(atletas)
-
         setAtletas(atletas);
     }
 
@@ -58,10 +56,8 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     async function cadastraAtleta(){
         try {
             const atletaComCategoria = {...atletaForm, categoriaId: categoria?.id}
-            console.log(atletaComCategoria)
             const response = await AtletaService.criar(atletaComCategoria);
             Notify.success("Competidor salvo com sucesso.")
-            console.log({atletaForm, response});
             setIsModalOpen(false);
             setAtletaForm(limpaAtletaForm())
             await carregaDados();      
@@ -70,6 +66,8 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                 const exception = error.response.data as ExceptionDefault;
                 Notify.error(`Não foi possível salvar o competidor.${exception.erros[0]}`)
             }
+
+            Notify.error("Erro desconhecido ao tentar cadastrar o competidor")
         }
     }
 

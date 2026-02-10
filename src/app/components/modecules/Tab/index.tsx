@@ -23,7 +23,7 @@ export function Tab({ tabs }: TabsProps) {
             onClick={() => setActive(index)}
             style={{
               ...styles.tabButton,
-              ...(active === index ? styles.active : {}),
+              ...(active === index ? styles.active : styles.inactive),
             }}
           >
             {tab.label}
@@ -48,7 +48,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   header: {
     display: "flex",
-    gap: "8px",
+    gap: "5px",
     borderBottom: "1px solid var(--color-bg-light)",
     marginLeft: 10
     // paddingBottom: "8px",
@@ -63,6 +63,12 @@ const styles: Record<string, React.CSSProperties> = {
   },
   active: {
     backgroundColor: "var(--color-primary)",
+    color: "#fff",
+    fontWeight: 600,
+  },
+  inactive: {
+    backgroundColor: "var(--color-primary)",
+    opacity: 0.4,
     color: "#fff",
     fontWeight: 600,
   },
