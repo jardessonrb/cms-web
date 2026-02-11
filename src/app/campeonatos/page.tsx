@@ -62,14 +62,12 @@ export default function CampeonatosPage() {
         </DataTableHeader>
 
         <DataTableBody>
-          {campeonatos.map((c) => (
-            <DataRow key={c.id} columns="3fr 1fr 1fr">
-              <DataCell>{c.nome}</DataCell>
-              <DataCell>{c.situacao}</DataCell>
+          {campeonatos.map((campeonatoRow) => (
+            <DataRow key={campeonatoRow.id} columns="3fr 1fr 1fr">
+              <DataCell>{campeonatoRow.nome}</DataCell>
+              <DataCell>{campeonatoRow.situacao}</DataCell>
               <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                <button onClick={() => router.push(`/campeonatos/${c.id}`)}>
-                  Visualizar
-                </button>
+                <Button mensagem="Visualizar" act={() => router.push(`/campeonatos/${campeonatoRow.id}`)} />
               </DataCell>
             </DataRow>
           ))}

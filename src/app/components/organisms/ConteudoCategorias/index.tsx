@@ -109,10 +109,7 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
                             <DataCell>{categoria.nome}</DataCell>
                             <DataCell>{categoria.situacao}</DataCell>
                             <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                            {/* <button onClick={() => router.push(`/atletas/${atleta.id}`)}>
-                                Visualizar
-                            </button> */}
-                            <p>visualizar</p>
+                                <Button mensagem="Visualizar" act={() => router.push(`/categorias/${categoria.id}`)} />
                             </DataCell>
                         </DataRow>
                     ))

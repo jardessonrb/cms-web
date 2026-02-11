@@ -68,7 +68,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     }
 
     async function carregaDadosComFiltro(){
-        AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length > 3 ? termoBusca : undefined)})
+        AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 ? termoBusca : undefined)})
             .then((page) => {
             setPaginaAtual(page.number)
             setTotalDePaginas(page.totalPages)
