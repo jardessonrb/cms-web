@@ -3,6 +3,9 @@ export type CategoriaDto = {
     nome: string
     situacao: string
     criadoEm: string
+    campeonatoId: string
+    quantidadeAtletas: number | null
+    quantidadeFases: number | null
 }
 
 export type CategoriaForm = {

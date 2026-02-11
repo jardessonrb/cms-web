@@ -1,3 +1,5 @@
+import CategoriaDetalhe from "@/app/components/organisms/CategoriaDetalhe";
+
 type Props = {
  params: Promise<{
     uuidCategoria: string;
@@ -6,5 +8,5 @@ type Props = {
 
 export default async function CategoriaDetalhePage({ params }: Props) {
   const { uuidCategoria } = await params
-  return <div><strong>Categoria - {uuidCategoria}</strong></div>
+  return <CategoriaDetalhe categoriaId={uuidCategoria}/>
 }

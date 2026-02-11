@@ -14,13 +14,15 @@ import { Notify } from "@/app/lib/notify";
 import { ExceptionDefault, SelectOption } from "@/app/types/default";
 import { AsyncSelect } from "../../atoms/AsyncSelect";
 import { CategoriaService } from "@/app/services/categoria-service";
+import { InscricaoAtletaCategoriaForm } from "@/app/types/inscricao-atleta-categoria";
 
 type ConteudoCompetidoresProps = {
+    categoriaId: string
     campeonatoId: string
 }
 
 
-export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps){
+export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: ConteudoCompetidoresProps){
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [atletas, setAtletas] = useState<AtletaListagemDto[]>([]);
@@ -28,8 +30,8 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     const [totalDePaginas, setTotalDePaginas] = useState(10);
     const [termoBusca, setTermoBusca] = useState<string | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [atletaForm, setAtletaForm] = useState(limpaAtletaForm() as AtletaForm);
-    const [categoria, setCategoria] = useState<SelectOption | null>(null);
+    const [inscricaoAtletaCategoria, setInscricaoAtletaCategoria] = useState(limpaAtletaForm() as InscricaoAtletaCategoriaForm);
+    const [competidor, setCompetidor] = useState<SelectOption | null>(null);
 
     function mostraAtletas(atletas: AtletaListagemDto[]){
         setAtletas(atletas);
@@ -37,56 +39,53 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
 
     function limpaAtletaForm(){
         return {
-            nome: undefined,
-            numero: undefined,
-            apelido: undefined,
-            campeonatoId,
-            cidade: undefined,
-            dataNascimento: undefined,
-            graduacao: undefined, 
-            responsavel: undefined,
-            grupo: undefined,
-            categoriaId: undefined
-        }
+            atletaId: undefined,
+        } as InscricaoAtletaCategoriaForm
     }
 
-    async function cadastraAtleta(){
+    async function inscreveAtletaEmCategoria(){
+        if(!competidor?.id){
+            Notify.error(`É preciso escolher uma atleta para inscrever na categoria.`)
+            return;
+        }
+
         try {
-            const atletaComCategoria = {...atletaForm, categoriaId: categoria?.id}
-            const response = await AtletaService.criar(atletaComCategoria);
-            Notify.success("Competidor salvo com sucesso.")
+            await CategoriaService.inscreverAtletaEmCategoria(categoriaId, competidor?.id);
+            Notify.success("Competidor inscrito na categoria com sucesso.")
             setIsModalOpen(false);
-            setAtletaForm(limpaAtletaForm())
-            setCategoria(null)
+            setCompetidor(null)
             await carregaDados();      
         } catch(error: any){
             if(error.response){
                 const exception = error.response.data as ExceptionDefault;
-                Notify.error(`Não foi possível salvar o competidor.${exception.erros[0]}`)
+                Notify.error(`${exception.erros[0]}`)
+            }else{
+                Notify.error("Erro desconhecido ao tentar inscrever o competidor no categoria")
             }
 
-            Notify.error("Erro desconhecido ao tentar cadastrar o competidor")
         }
     }
 
     async function carregaDadosComFiltro(){
-        AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 ? termoBusca : undefined)})
+        AtletaService.listaAtletasDaCategoria(categoriaId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 ? termoBusca : undefined)})
             .then((page) => {
-            setPaginaAtual(page.number)
-            setTotalDePaginas(page.totalPages)
-            mostraAtletas(page.content)
+                setPaginaAtual(page.number)
+                setTotalDePaginas(page.totalPages)
+                mostraAtletas(page.content)
             })
-        .finally(() => setLoading(false));
+            .finally(() => setLoading(false));
     }
 
     async function carregaDados(){
-        AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10})
-        .then((page) => {
-        setPaginaAtual(page.number)
-        setTotalDePaginas(page.totalPages)
-        mostraAtletas(page.content)
-        })
-        .finally(() => setLoading(false));
+        AtletaService.listaAtletasDaCategoria(categoriaId, {page: paginaAtual, size: 10})
+            .then((page) => {
+                setPaginaAtual(page.number)
+                setTotalDePaginas(page.totalPages)
+                mostraAtletas(page.content)
+            })
+            .finally(() => setLoading(false));
+
+        console.log(atletas)
     }
 
     useEffect(() => {
@@ -105,7 +104,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                     />
                     <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
                 </div>
-                <Button mensagem="Cadastrar Novo Competidor" act={() => {
+                <Button mensagem="Inscrever Competidor na Categoria" act={() => {
                     setIsModalOpen(true);
                 }}/>
             </div>
@@ -145,62 +144,20 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                     />
                 }
             </div>
-            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title="Novo Competidor">
-                <Input
-                    placeholder="Nome"
-                    value={atletaForm.nome}
-                    onChange={v => Utils.updateField(setAtletaForm, "nome", v)}
-                />
-                <Input
-                    placeholder="Número"
-                    value={String(atletaForm.numero ? atletaForm.numero : 0)}
-                    onChange={v => Utils.updateField(setAtletaForm, "numero", Number(v))}
-                />
-                <Input
-                    placeholder="Apelido"
-                    value={atletaForm.apelido}
-                    onChange={v => Utils.updateField(setAtletaForm, "apelido", v)}
-                />
-                <Input
-                    placeholder="Graduação"
-                    value={atletaForm.graduacao}
-                    onChange={v => Utils.updateField(setAtletaForm, "graduacao", v)}
-                />
-                <Input
-                    placeholder="Responsável"
-                    value={atletaForm.responsavel}
-                    onChange={v => Utils.updateField(setAtletaForm, "responsavel", v)}
-                />
-                <Input
-                    placeholder="Grupo"
-                    value={atletaForm.grupo}
-                    onChange={v => Utils.updateField(setAtletaForm, "grupo", v)}
-                />
-                <Input
-                    placeholder="Cidade"
-                    value={atletaForm.cidade}
-                    onChange={v => Utils.updateField(setAtletaForm, "cidade", v)}
-                />
-                <Input
-                    type="date"
-                    placeholder="Data de nascimento. Formato 01/01/2020"
-                    value={atletaForm.dataNascimento}
-                    onChange={v => Utils.updateField(setAtletaForm, "dataNascimento", v)}
-                />
-
+            <Modal open={isModalOpen} onClose={() => {setIsModalOpen(false), setCompetidor(null)}} title="Inscrever Competidor">
                 <AsyncSelect
-                    placeholder="Escolher categoria"
-                    value={categoria}
-                    onSelect={setCategoria}
+                    placeholder="Escolher Competidor"
+                    value={competidor}
+                    onSelect={setCompetidor}
                     fetchOptions={async (query) => {
-                        const page = await CategoriaService.listaCategoriasDoCampeonato(campeonatoId, {page: 0, size: 5, filtro: (query && query.length >= 3 ? query : undefined)});
+                        const page = await AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: 0, size: 5, filtro: (query && query.length >= 3 ? query : undefined)});
                         return page.content.map((c) => ({
                             id: c.id,
-                            label: c.nome,
+                            label: `${c.numero} - ${c.nome}(${c.apelido})`,
                         }));
                     }}
                 />
-                <Button mensagem="Cadastrar Atleta" act={cadastraAtleta} />
+                <Button mensagem="Inscrever Atleta" act={inscreveAtletaEmCategoria} />
             </Modal>
         
         </div> 

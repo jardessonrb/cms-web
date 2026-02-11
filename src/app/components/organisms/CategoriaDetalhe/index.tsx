@@ -1,29 +1,28 @@
 "use client";
 
 import { Tab } from "@/app/components/modecules/Tab";
-import { ConteudoCompetidores } from "@/app/components/organisms/ConteudoCompetidores";
 import { Notify } from "@/app/lib/notify";
-import { CampeonatoService } from "@/app/services/campeonato-service";
 import { Utils } from "@/app/services/utils";
-import { CampeonatoDetalhadoDto } from "@/app/types/campeonato";
 import { ExceptionDefault } from "@/app/types/default";
 import { useEffect, useState } from "react";
-import { ConteudoCategorias } from "../ConteudoCategorias";
-import { ConteudoJurados } from "../ConteudoJurados";
 import { CardTitle } from "../../atoms/CardTitle";
+import { CategoriaDto } from "@/app/types/categoria";
+import { CategoriaService } from "@/app/services/categoria-service";
+import { ConteudoCompetidoresCategoria } from "../ConteudoCompetidoresCategoria";
 
 type Props = {
-    campeonatoId: string
+    categoriaId: string
 };
 
-export default function CampeonatoDetalhe({ campeonatoId }: Props) {
-  const [campeonato, setCampeonato] = useState<CampeonatoDetalhadoDto | null>(null);
+export default function CategoriaDetalhe({ categoriaId }: Props) {
+  const [categoria, setCategoria] = useState<CategoriaDto>({} as CategoriaDto);
 
-  async function buscaCampeonatoPorId() {
+  async function buscaCategoriaPorId() {
       
     try {
-      const campeonatoResponse = await CampeonatoService.buscaCampeonatoPorId(campeonatoId);
-      setCampeonato(campeonatoResponse)
+      const categoriaResponse = await CategoriaService.buscaCategoriaPorId(categoriaId);
+      console.log(categoriaResponse)
+      setCategoria(categoriaResponse)
     } catch(error: any){
       if(error.response){
           const exception = error.response.data as ExceptionDefault;
@@ -35,36 +34,31 @@ export default function CampeonatoDetalhe({ campeonatoId }: Props) {
   }
 
   useEffect(() => {
-    buscaCampeonatoPorId();
+    buscaCategoriaPorId();
   }, []);
 
   return (
     <main style={styles.main}>
       <CardTitle>
         <div style={{display: "flex", width: "100%", flexDirection: 'column', alignItems: 'center', justifyContent: "center"}}>
-            <h1>Competição {campeonato?.nome}</h1>
-            <strong>Criado em {Utils.formataDataBR(campeonato?.criadoEm)} - Situação {campeonato?.situacao}</strong>
+            <h1>Categoria {categoria?.nome}</h1>
+            <strong>Criado em {Utils.formataDataBR(categoria?.criadoEm)} - Situação {categoria?.situacao}</strong>
         </div>
-        <div style={styles.containerDadosCampeonato}>
+        <div style={styles.containerDados}>
           <div>
             <p>Competidores</p>
-            <p>{campeonato?.quantidadeAtletas} competidores</p>
+            <p>{categoria?.quantidadeAtletas} competidores</p>
           </div>
           <div>
-            <p>Categorias</p>
-            <p>{campeonato?.quantidadeCategorias} categorias</p>
-          </div>
-          <div>
-            <p>Jurados</p>
-            <p>{campeonato?.quantidadeJurados} jurados</p>
+            <p>Fases</p>
+            <p>{categoria?.quantidadeFases} fases</p>
           </div>
         </div>
       </CardTitle>
       <Tab
         tabs={[
-          { label: "Competidores", content: <ConteudoCompetidores  campeonatoId={campeonatoId}/> },
-          { label: "Categorias", content: <ConteudoCategorias campeonatoId={campeonatoId} /> },
-          { label: "Jurados", content: <ConteudoJurados campeonatoId={campeonatoId} /> },
+          { label: "Competidores", content: <ConteudoCompetidoresCategoria categoriaId={categoriaId} campeonatoId={categoria.campeonatoId}/>},
+          { label: "Fases", content: <div>Fases</div>}
         ]}
       />
 
@@ -91,7 +85,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 20,
     marginTop: 10
   },
-  containerDadosCampeonato: {
+  containerDados: {
     display: "flex",
     justifyContent: 'space-between',
     alignItems: 'center',

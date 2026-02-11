@@ -37,4 +37,13 @@ export const AtletaService = {
     const response = await api.put<Atleta>(`/atleta/${id}`, body);
     return response.data;
   },
+
+  async listaAtletasDaCategoria(categoriaId: string, params: ListParams): Promise<Page<AtletaListagemDto>> {
+    console.log({categoriaId})
+    const paramsLimpos = Utils.removeChavesSemValor(params);
+    const response = await api.get<Page<AtletaListagemDto>>(`/atleta/categoria/${categoriaId}`, {
+      params: paramsLimpos,
+    });
+    return response.data;
+  },
 };

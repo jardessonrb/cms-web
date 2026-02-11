@@ -1,4 +1,4 @@
-import { CategoriaDto, categoriaForm } from "../types/categoria";
+import { CategoriaDto, CategoriaForm } from "../types/categoria";
 import { ListParams } from "../types/default";
 import { Page } from "../types/page";
 import { api } from "./api";
@@ -13,8 +13,16 @@ export const CategoriaService = {
 
         return response.data;
     }, 
-    async criaCategoria(body: categoriaForm): Promise<CategoriaDto> {
-    const response = await api.post<CategoriaDto>("/categoria", body);
-    return response.data;
+    async criaCategoria(body: CategoriaForm): Promise<CategoriaDto> {
+        const response = await api.post<CategoriaDto>("/categoria", body);
+        return response.data;
     },
+    async buscaCategoriaPorId(categoriaId: string): Promise<CategoriaDto> {
+        const response = await api.get<CategoriaDto>(`/categoria/${categoriaId}`);
+        return response.data;
+    },
+    async inscreverAtletaEmCategoria(categoriaId: string, atletaId: string): Promise<void> {
+        await api.post<void>(`/categoria/${categoriaId}/atleta/${atletaId}/inscrever`);
+        return;
+    }
 }
