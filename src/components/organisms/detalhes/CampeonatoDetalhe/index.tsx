@@ -1,16 +1,16 @@
 "use client";
 
-import { Tab } from "@/app/components/modecules/Tab";
-import { ConteudoCompetidores } from "@/app/components/organisms/ConteudoCompetidores";
-import { Notify } from "@/app/lib/notify";
-import { CampeonatoService } from "@/app/services/campeonato-service";
-import { Utils } from "@/app/services/utils";
-import { CampeonatoDetalhadoDto } from "@/app/types/campeonato";
-import { ExceptionDefault } from "@/app/types/default";
+import { Tab } from "@/components/modecules/Tab";
+import { ConteudoCompetidores } from "@/components/organisms/conteudoCampeonato/ConteudoCompetidores";
+import { Notify } from "@/lib/notify";
+import { CampeonatoService } from "@/services/campeonato-service";
+import { Utils } from "@/services/utils";
+import { CampeonatoDetalhadoDto } from "@/types/campeonato";
+import { ExceptionDefault } from "@/types/default";
 import { useEffect, useState } from "react";
-import { ConteudoCategorias } from "../ConteudoCategorias";
-import { ConteudoJurados } from "../ConteudoJurados";
-import { CardTitle } from "../../atoms/CardTitle";
+import { ConteudoCategorias } from "../../../organisms/conteudoCampeonato/ConteudoCategorias";
+import { ConteudoJurados } from "../../../organisms/conteudoCampeonato/ConteudoJurados";
+import { CardTitle } from "../../../atoms/CardTitle";
 
 type Props = {
     campeonatoId: string

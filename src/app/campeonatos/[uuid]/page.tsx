@@ -1,4 +1,4 @@
-import CampeonatoDetalhe from "@/app/components/organisms/CampeonatoDetalhe";
+import CampeonatoDetalhe from "@/components/organisms/detalhes/CampeonatoDetalhe";
 
 type Props = {
  params: Promise<{

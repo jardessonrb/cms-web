@@ -1,4 +1,4 @@
-import CategoriaDetalhe from "@/app/components/organisms/CategoriaDetalhe";
+import CategoriaDetalhe from "@/components/organisms/detalhes/CategoriaDetalhe";
 
 type Props = {
  params: Promise<{

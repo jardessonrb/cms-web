@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Input } from "../../atoms/Input";
-import { Modal } from "../../modecules/ModalBase";
-import { Pagination } from "../../modecules/Pagination";
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../Table";
+import { Input } from "../../../atoms/Input";
+import { Modal } from "../../../modecules/ModalBase";
+import { Pagination } from "../../../modecules/Pagination";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../../Table";
 import { useRouter } from "next/navigation";
-import { Button } from "../../atoms/Button";
-import { Utils } from "@/app/services/utils";
-import { Notify } from "@/app/lib/notify";
-import { ExceptionDefault } from "@/app/types/default";
-import { CategoriaService } from "@/app/services/categoria-service";
-import { CategoriaDto, CategoriaForm } from "@/app/types/categoria";
+import { Button } from "../../../atoms/Button";
+import { Utils } from "@/services/utils";
+import { Notify } from "@/lib/notify";
+import { ExceptionDefault } from "@/types/default";
+import { CategoriaService } from "@/services/categoria-service";
+import { CategoriaDto, CategoriaForm } from "@/types/categoria";
 
 type ConteudoCategoriasProps = {
     campeonatoId: string

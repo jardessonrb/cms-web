@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CampeonatoService} from "../services/campeonato-service";
+import { CampeonatoService} from "../../services/campeonato-service";
 // import { Table } from "../components/Table";
 import { useRouter } from "next/navigation";
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../components/Table";
-import { Button } from "../components/atoms/Button";
-import { Modal } from "../components/modecules/ModalBase";
-import { Input } from "../components/atoms/Input";
-import { Pagination } from "../components/modecules/Pagination";
-import { CampeonatoDto } from "../types/campeonato";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../components/Table";
+import { Button } from "../../components/atoms/Button";
+import { Modal } from "../../components/modecules/ModalBase";
+import { Input } from "../../components/atoms/Input";
+import { Pagination } from "../../components/modecules/Pagination";
+import { CampeonatoDto } from "../../types/campeonato";
 
 export default function CampeonatosPage() {
   const [campeonatos, setCampeonatos] = useState<CampeonatoDto[]>([]);

@@ -1,14 +1,14 @@
 "use client";
 
-import { Tab } from "@/app/components/modecules/Tab";
-import { Notify } from "@/app/lib/notify";
-import { Utils } from "@/app/services/utils";
-import { ExceptionDefault } from "@/app/types/default";
+import { Tab } from "@/components/modecules/Tab";
+import { Notify } from "@/lib/notify";
+import { Utils } from "@/services/utils";
+import { ExceptionDefault } from "@/types/default";
 import { useEffect, useState } from "react";
-import { CardTitle } from "../../atoms/CardTitle";
-import { CategoriaDto } from "@/app/types/categoria";
-import { CategoriaService } from "@/app/services/categoria-service";
-import { ConteudoCompetidoresCategoria } from "../ConteudoCompetidoresCategoria";
+import { CardTitle } from "../../../atoms/CardTitle";
+import { CategoriaDto } from "@/types/categoria";
+import { CategoriaService } from "@/services/categoria-service";
+import { ConteudoCompetidoresCategoria } from "@/components/organisms/conteudoCategoria/ConteudoCompetidoresCategoria";
 
 type Props = {
     categoriaId: string

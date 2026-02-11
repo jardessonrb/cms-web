@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Input } from "../../atoms/Input";
-import { Modal } from "../../modecules/ModalBase";
-import { Pagination } from "../../modecules/Pagination";
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../Table";
+import { Input } from "../../../atoms/Input";
+import { Modal } from "../../../modecules/ModalBase";
+import { Pagination } from "../../../modecules/Pagination";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../../Table";
 import { useRouter } from "next/navigation";
-import { Button } from "../../atoms/Button";
-import { Utils } from "@/app/services/utils";
-import { Notify } from "@/app/lib/notify";
-import { ExceptionDefault } from "@/app/types/default";
-import { JuradoDto, JuradoForm } from "@/app/types/jurado";
-import { JuradoService } from "@/app/services/jurado-service";
-import { Page } from "@/app/types/page";
+import { Button } from "../../../atoms/Button";
+import { Utils } from "@/services/utils";
+import { Notify } from "@/lib/notify";
+import { ExceptionDefault } from "@/types/default";
+import { JuradoDto, JuradoForm } from "@/types/jurado";
+import { JuradoService } from "@/services/jurado-service";
+import { Page } from "@/types/page";
 
 type ConteudoJuradosProps = {
     campeonatoId: string

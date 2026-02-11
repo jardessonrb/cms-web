@@ -1,19 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Input } from "../../atoms/Input";
-import { Modal } from "../../modecules/ModalBase";
-import { Pagination } from "../../modecules/Pagination";
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../Table";
-import { AtletaForm, AtletaListagemDto } from "@/app/types/atleta";
+import { Input } from "../../../atoms/Input";
+import { Modal } from "../../../modecules/ModalBase";
+import { Pagination } from "../../../modecules/Pagination";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../../Table";
+import { AtletaForm, AtletaListagemDto } from "@/types/atleta";
 import { useRouter } from "next/navigation";
-import { AtletaService } from "@/app/services/atleta-service";
-import { Button } from "../../atoms/Button";
-import { Utils } from "@/app/services/utils";
-import { Notify } from "@/app/lib/notify";
-import { ExceptionDefault, SelectOption } from "@/app/types/default";
-import { AsyncSelect } from "../../atoms/AsyncSelect";
-import { CategoriaService } from "@/app/services/categoria-service";
+import { AtletaService } from "@/services/atleta-service";
+import { Button } from "../../../atoms/Button";
+import { Utils } from "@/services/utils";
+import { Notify } from "@/lib/notify";
+import { ExceptionDefault, SelectOption } from "@/types/default";
+import { AsyncSelect } from "../../../atoms/AsyncSelect";
+import { CategoriaService } from "@/services/categoria-service";
 
 type ConteudoCompetidoresProps = {
     campeonatoId: string

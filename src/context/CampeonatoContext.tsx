@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { CampeonatoDetalhadoDto } from "@/app/types/campeonato";
+import { CampeonatoDetalhadoDto } from "@/types/campeonato";
 
 type CampeonatoContextType = {
   campeonato: CampeonatoDetalhadoDto | null;
