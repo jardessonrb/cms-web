@@ -5,7 +5,7 @@ export type CategoriaDto = {
     criadoEm: string
 }
 
-export type categoriaForm = {
+export type CategoriaForm = {
     nome: string | undefined
     campeonatoId: string
 }

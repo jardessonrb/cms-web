@@ -10,3 +10,8 @@ export interface ListParams {
   size: number;
   filtro?: string | undefined
 }
+
+export type SelectOption = {
+  id: string;
+  label: string;
+}

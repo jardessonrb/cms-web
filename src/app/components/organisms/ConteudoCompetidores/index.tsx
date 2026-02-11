@@ -11,7 +11,7 @@ import { AtletaService } from "@/app/services/atleta-service";
 import { Button } from "../../atoms/Button";
 import { Utils } from "@/app/services/utils";
 import { Notify } from "@/app/lib/notify";
-import { ExceptionDefault } from "@/app/types/default";
+import { ExceptionDefault, SelectOption } from "@/app/types/default";
 import { AsyncSelect } from "../../atoms/AsyncSelect";
 import { CategoriaService } from "@/app/services/categoria-service";
 
@@ -19,10 +19,6 @@ type ConteudoCompetidoresProps = {
     campeonatoId: string
 }
 
-export type SelectOption = {
-  id: string;
-  label: string;
-};
 
 export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps){
     const router = useRouter();
