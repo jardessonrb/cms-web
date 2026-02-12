@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 type ListagemDisputaProps = {
     faseId: string
     rodadaId: string
-    act: () => void
+    act: (disputaId: string) => void
 }
 
 type ExtracaoNomesDisputa = {
@@ -76,7 +76,7 @@ export function ListagemDisputa({ faseId, rodadaId, act }: ListagemDisputaProps)
                                     <DataCell>{getDescricaoTipoDisputaEnum(disputa.tipoDisputa)}</DataCell>
                                     <DataCell>{getDescricaoSituacaoDisputaEnum(disputa.situacao)}</DataCell>
                                     <DataCell style={{display: "flex", flexDirection: 'column', justifyContent: 'space-between'}}>
-                                        <button onClick={act}>
+                                        <button onClick={() => act(disputa.id)}>
                                             Adicionar Notas
                                         </button>
                                     </DataCell>

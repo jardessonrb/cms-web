@@ -29,7 +29,6 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
 
 
     async function carregaDadosComFiltro(){
-        console.log(termoBusca)
         CategoriaService.listaCategoriasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 ? termoBusca : undefined)})
             .then((page) => {
             setPaginaAtual(page.number)

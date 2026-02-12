@@ -19,13 +19,17 @@ import { CriteriorEntradaEnum, FaseDto } from "@/types/fase";
 import { getDescricaoSituacaoRodadaEnum, getDescricaoTipoRodadaEnum, RodadaDto } from "@/types/roda";
 import { RodadaService } from "@/services/rodada-service";
 import { ListagemDisputa } from "../ListagemDisputa";
+import { CardRegistroDeNotas } from "../CardRegistroDeNotas";
+import { DisputaDto } from "@/types/disputa";
+import { DisputaService } from "@/services/disputa-service";
 
 type ConteudoFaseCategoriaProps = {
     categoriaId: string
     faseId: string
+    campeonatoId: string
 }
 
-export function ConteudoRodasFase({ categoriaId, faseId }: ConteudoFaseCategoriaProps){
+export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: ConteudoFaseCategoriaProps){
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [rodadas, setRodadas] = useState<RodadaDto[]>([]);
@@ -39,6 +43,8 @@ export function ConteudoRodasFase({ categoriaId, faseId }: ConteudoFaseCategoria
     const [isAtivo, setIsAtivo] = useState(false);
     const [rodadaAbertaExpandidaId, setRodadaAbertaExpandidaId] = useState<string | null>(null);
     const [rodadasExpandidas, setRodadasExpandidas] = useState<Set<string>>(new Set());
+    const [isModalRegistroNotaOpen, setIsModalRegistroNotaOpen] = useState<boolean>(false);
+    const [disputaAtualParaRegistroNota, setDisputaAtualParaRegistroNota] = useState<DisputaDto>()
 
     function mostraRodadas(rodadas: RodadaDto[]){
         setRodadas(rodadas);
@@ -85,6 +91,22 @@ export function ConteudoRodasFase({ categoriaId, faseId }: ConteudoFaseCategoria
         }
     }
 
+    async function abrirModalDeRegistroDeNota(disputaId: string){
+        try {
+            const disputaResponse = await DisputaService.buscaDisputaPorId(disputaId);
+            setDisputaAtualParaRegistroNota(disputaResponse);
+            setIsModalRegistroNotaOpen(true)
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`${exception.erros[0]}`)
+            }else{
+                Notify.error("Erro desconhecido ao tentar inscrever o competidor no categoria")
+            }
+
+        }
+    }
+
     async function carregaDadosComFiltro(){
         RodadaService.listaRodadaPorFaseId(faseId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 ? termoBusca : undefined)})
             .then((page) => {
@@ -103,8 +125,6 @@ export function ConteudoRodasFase({ categoriaId, faseId }: ConteudoFaseCategoria
                 mostraRodadas(page.content)
             })
             .finally(() => setLoading(false));
-
-        console.log(rodadas)
     }
 
     useEffect(() => {
@@ -142,7 +162,15 @@ export function ConteudoRodasFase({ categoriaId, faseId }: ConteudoFaseCategoria
                         // const isMostraConteudoExpandidoLinha = rodadaAbertaExpandidaId === rodada.id;
                         const isMostraConteudoExpandidoLinha = rodadasExpandidas.has(rodada.id);
                         return (
-                            <DataRow key={rodada.id} columns="2fr 1fr 2fr 1fr 1fr" expandContent={<ListagemDisputa faseId={faseId} rodadaId={rodada.id} act={() => console.log("Clicou no modal")} />} isExpanded={isMostraConteudoExpandidoLinha}>
+                            <DataRow key={rodada.id} columns="2fr 1fr 2fr 1fr 1fr" 
+                                expandContent={
+                                    <ListagemDisputa 
+                                        faseId={faseId} 
+                                        rodadaId={rodada.id} 
+                                        act={disputaId => abrirModalDeRegistroDeNota(disputaId)} 
+                                    />} 
+                                isExpanded={isMostraConteudoExpandidoLinha}
+                                >
                                 <DataCell>{rodada.nome}</DataCell>
                                 <DataCell>{getDescricaoTipoRodadaEnum(rodada.tipoRodada)}</DataCell>
                                 <DataCell>{rodada.disputasConcluidas} de {rodada.disputasConcluidas + rodada.disputasPendentes}</DataCell>
@@ -183,6 +211,23 @@ export function ConteudoRodasFase({ categoriaId, faseId }: ConteudoFaseCategoria
                     }}
                 />
                 <Button mensagem="Criar nova fase" act={inscreveAtletaEmCategoria} />
+            </Modal>
+
+            <Modal open={isModalRegistroNotaOpen} onClose={() => {setIsModalRegistroNotaOpen(false)}} modalStyle={{maxWidth: "800px"}} title="Registrar Notas">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" }}>
+                    <CardRegistroDeNotas
+                        registro={disputaAtualParaRegistroNota?.registrosDisputa[0]}
+                        onChangeNotas={(notas) => console.log(notas)}
+                        campeonatoId={campeonatoId}
+                    />
+
+                    <CardRegistroDeNotas
+                        registro={disputaAtualParaRegistroNota?.registrosDisputa[1]}
+                        onChangeNotas={(notas) => console.log(notas)}
+                        campeonatoId={campeonatoId}
+                    />
+                </div>
+                <Button mensagem="Salvar Notas" act={inscreveAtletaEmCategoria} />
             </Modal>
         
         </div> 

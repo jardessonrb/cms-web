@@ -7,20 +7,26 @@ type ModalProps = {
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
+  bodyStyle?: React.CSSProperties;
+  modalStyle?: React.CSSProperties;
 };
 
-export function Modal({ open, onClose, title, children }: ModalProps) {
+export function Modal({ open, onClose, title, children, bodyStyle, modalStyle }: ModalProps) {
   if (!open) return null;
 
   return (
     <div style={styles.overlay}>
-      <div style={styles.modal}>
+      <div style={{...styles.modal, ...modalStyle}}>
         <div style={styles.header}>
-          <h3 style={styles.title}>{title}</h3>
+          <div style={{width: "100%", display: "flex", justifyContent: 'center', alignItems: 'center'}}>
+            <h3 style={styles.title}>{title}</h3>
+          </div>
           <button style={styles.close} onClick={onClose}>✕</button>
         </div>
 
-        <div style={styles.body}>{children}</div>
+        <div style={{ ...styles.body, ...bodyStyle }}>
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -49,6 +55,8 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "12px",
+    width: '100%',
+    // backgroundColor: "#f888ff"
   },
   title: {
     margin: 0,

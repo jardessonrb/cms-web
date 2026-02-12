@@ -22,10 +22,8 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
   const [fase, setFase] = useState<FaseDto>({} as FaseDto);
 
   async function buscaCategoriaPorId() {
-      
     try {
       const categoriaResponse = await CategoriaService.buscaCategoriaPorId(categoriaId);
-      console.log(categoriaResponse)
       setCategoria(categoriaResponse)
     } catch(error: any){
       if(error.response){
@@ -38,10 +36,8 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
   }
 
   async function buscaFasePorId() {
-      
     try {
       const faseResponse = await FaseService.buscaFasePorId(faseId);
-      console.log(faseResponse)
       setFase(faseResponse)
     } catch(error: any){
       if(error.response){
@@ -78,7 +74,7 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
       </CardTitle>
       <Tab
         tabs={[
-          { label: "Rodadas", content: <ConteudoRodasFase categoriaId={categoriaId} faseId={faseId} />},
+          { label: "Rodadas", content: <ConteudoRodasFase categoriaId={categoriaId} faseId={faseId} campeonatoId={categoria.campeonatoId}/>},
           { label: "Ranking", content: <div>Ranking</div>}
         ]}
       />

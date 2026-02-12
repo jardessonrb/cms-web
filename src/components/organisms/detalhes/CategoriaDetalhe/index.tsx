@@ -22,7 +22,6 @@ export default function CategoriaDetalhe({ categoriaId }: Props) {
       
     try {
       const categoriaResponse = await CategoriaService.buscaCategoriaPorId(categoriaId);
-      console.log(categoriaResponse)
       setCategoria(categoriaResponse)
     } catch(error: any){
       if(error.response){

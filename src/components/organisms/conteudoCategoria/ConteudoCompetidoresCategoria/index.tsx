@@ -84,8 +84,6 @@ export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: Con
                 mostraAtletas(page.content)
             })
             .finally(() => setLoading(false));
-
-        console.log(atletas)
     }
 
     useEffect(() => {

@@ -85,8 +85,6 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
             setJurados(page.content)
         })
         .finally(() => setLoading(false));
-
-        console.log(jurados)
     }
 
     useEffect(() => {

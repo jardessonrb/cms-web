@@ -85,8 +85,6 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                 mostraFases(page.content)
             })
             .finally(() => setLoading(false));
-
-        console.log(fases)
     }
 
     useEffect(() => {
