@@ -1,6 +1,22 @@
 "use client";
-import React from "react";
+import React, { HTMLAttributes } from "react";
 
-export function DataTableBody({ children }: { children: React.ReactNode }) {
-  return <div>{children}</div>;
+type Props = HTMLAttributes<HTMLDivElement> & {
+  children: React.ReactNode;
+  maxHeight?: number | string;
+};
+
+export function DataTableBody({ children, maxHeight, style, ...rest }: Props) {
+  return (
+    <div
+      {...rest}
+      style={{
+        overflowY: "auto",
+        ...(maxHeight ? { maxHeight } : {}),
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
 }

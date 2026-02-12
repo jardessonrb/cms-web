@@ -12,4 +12,8 @@ export const FaseService = {
     });
     return response.data;
   },
+  async buscaFasePorId(faseId: string): Promise<FaseDto> {
+    const response = await api.get<FaseDto>(`/fase/${faseId}`);
+    return response.data;
+  },
 }

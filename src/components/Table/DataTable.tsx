@@ -6,7 +6,7 @@ type Props = HTMLAttributes<HTMLDivElement> & {
 };
 
 export function DataTable({ children, style, ...rest }: Props) {
-  return <div style={styles}>{children}</div>;
+  return <div style={{...styles.table, ...style}}>{children}</div>;
 }
 
 const styles: Record<string, React.CSSProperties> = {
