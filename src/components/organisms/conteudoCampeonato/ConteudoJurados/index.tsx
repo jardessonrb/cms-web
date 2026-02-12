@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Input } from "../../../atoms/Input";
 import { Modal } from "../../../modecules/ModalBase";
 import { Pagination } from "../../../modecules/Pagination";
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../../Table";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "../../../Table";
 import { useRouter } from "next/navigation";
 import { Button } from "../../../atoms/Button";
 import { Utils } from "@/services/utils";
@@ -109,32 +109,32 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
                     setIsModalOpen(true);
                 }}/>
             </div>
-            <DataTable>
-                <DataTableHeader columns="2fr 1fr 2fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
-                    <div><strong>Nome</strong></div>
-                    <div><strong>Apelido</strong></div>
-                    <div><strong>Grupo/Escola</strong></div>
-                    <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
-                </DataTableHeader>
-        
-                <DataTableBody>
-                    {jurados && jurados.length > 0 ? (
-                        jurados.map((jurado) => (
-                        <DataRow key={jurado.id} columns="2fr 1fr 2fr 1fr">
-                            <DataCell>{jurado.nome}</DataCell>
-                            <DataCell>{jurado.apelido}</DataCell>
-                            <DataCell>{jurado.grupo}</DataCell>
-                            <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                            {/* <button onClick={() => router.push(`/atletas/${atleta.id}`)}>
-                                Visualizar
-                            </button> */}
-                            <p>visualizar</p>
-                            </DataCell>
-                        </DataRow>
-                    ))
-                    ) : (<strong>Nenhum jurado encontrado</strong>)}
-                </DataTableBody>
-            </DataTable>
+            {jurados && jurados.length > 0 ? (
+                <DataTable>
+                    <DataTableHeader columns="2fr 1fr 2fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                        <div><strong>Nome</strong></div>
+                        <div><strong>Apelido</strong></div>
+                        <div><strong>Grupo/Escola</strong></div>
+                        <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
+                    </DataTableHeader>
+            
+                    <DataTableBody>
+                        {jurados.map((jurado) => (
+                            <DataRow key={jurado.id} columns="2fr 1fr 2fr 1fr">
+                                <DataCell>{jurado.nome}</DataCell>
+                                <DataCell>{jurado.apelido}</DataCell>
+                                <DataCell>{jurado.grupo}</DataCell>
+                                <DataCell style={{display: "flex", justifyContent: 'center'}}>
+                                {/* <button onClick={() => router.push(`/atletas/${atleta.id}`)}>
+                                    Visualizar
+                                </button> */}
+                                <p>visualizar</p>
+                                </DataCell>
+                            </DataRow>
+                        ))}
+                    </DataTableBody>
+                </DataTable>
+            ) : (<DataTableMessageEmpty>Nenhum jurado encontrado</DataTableMessageEmpty>)}
         
             <div style={styles.footer}>
                 {jurados && jurados.length > 0 && 

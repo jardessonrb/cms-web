@@ -1,64 +1,93 @@
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "@/components/Table";
-import { useState } from "react";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "@/components/Table";
+import { Notify } from "@/lib/notify";
+import { DisputaService } from "@/services/disputa-service";
+import { RodadaService } from "@/services/rodada-service";
+import { Utils } from "@/services/utils";
+import { ExceptionDefault } from "@/types/default";
+import { DisputaDto, getDescricaoSituacaoDisputaEnum, getDescricaoTipoDisputaEnum, RegistroDisputaDto } from "@/types/disputa";
+import { useEffect, useState } from "react";
 
 type ListagemDisputaProps = {
     faseId: string
+    rodadaId: string
+    act: () => void
 }
 
-export function ListagemDisputa({ faseId }: ListagemDisputaProps){
-    const [disputas, setDisputas] = useState<any[]>([
-        {
-            id: "odofofofoof-fo4i3-33k4k43-3jja",
-            nome: "Fulano vs Sicrano",
-            situacao: "Pendente"
-        },
-        {
-            id: "odofofofoof-fo4i3-33k4k43-3jjb",
-            nome: "Fulano vs Sicrano",
-            situacao: "Pendente"
-        },{
-            id: "odofofofoof-fo4i3-33k4k43-3jjc",
-            nome: "Fulano vs Sicrano",
-            situacao: "Concluída"
-        },{
-            id: "odofofofoof-fo4i3-33k4k43-3jjd",
-            nome: "Fulano vs Sicrano",
-            situacao: "Concluída"
-        },{
-             id: "odofofofoof-fo4i3-33k4k43-3jjd",
-            nome: "Fulano vs Sicrano",
-            situacao: "Concluída"
-        },
-    ])
+type ExtracaoNomesDisputa = {
+    texto1: string
+    texto2: string
+}
+
+export function ListagemDisputa({ faseId, rodadaId, act }: ListagemDisputaProps){
+    const [disputas, setDispustas] = useState<DisputaDto[]>([])
+
+    function extraiNomeDisputa(disputa: DisputaDto): ExtracaoNomesDisputa {
+        let registroDisputa1: RegistroDisputaDto = disputa.registrosDisputa[0]
+        let registroDisputa2: RegistroDisputaDto | null = null; 
+
+        if(disputa.registrosDisputa.length > 1){
+            registroDisputa2 = disputa.registrosDisputa[1]
+        }
+        
+        const parteNomeDisputa1 = `${Utils.uniNomeAndApelidoAndNumero(registroDisputa1.nomeAtleta, registroDisputa1.apelidoAtleta, registroDisputa1.numeroAtleta)}`;
+        const parteNomeDisputa2 = `${ registroDisputa2 ? Utils.uniNomeAndApelidoAndNumero(registroDisputa2.nomeAtleta, registroDisputa2.apelidoAtleta, registroDisputa2.numeroAtleta) : ""}`;
+        return {texto1: parteNomeDisputa1, texto2: `${parteNomeDisputa2.length > 0 ? parteNomeDisputa2 : ""}`} 
+    }
+
+    async function carregaDados() {
+        try {
+            const disputasResponse = await DisputaService.buscaDisputasPorRodadaId(rodadaId, {page: 0, size: 0});
+            setDispustas(disputasResponse);     
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`${exception.erros[0]}`)
+            }else{
+                Notify.error("Erro desconhecido ao tentar buscar as disputas da rodada")
+            }
+        }
+    }
+
+    useEffect(() => {
+        carregaDados();
+    }, []);
+
     return (
         <div style={styles.container}>
-            <DataTable style={{width: "100%"}}>
-                <DataTableHeader columns="4fr 2fr 2fr 1fr" style={styles.dataTableHeader}>
-                    <div><strong>Competidores</strong></div>
-                    <div><strong>Tipo de disputa</strong></div>
-                    <div><strong>Situação</strong></div>
-                    <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
-                </DataTableHeader>
+            {disputas && disputas.length > 0 ? (
+                <DataTable style={{width: "100%"}}>
+                    <DataTableHeader columns="3fr 2fr 1fr 1fr" style={styles.dataTableHeader}>
+                        <div><strong>Competidores</strong></div>
+                        <div><strong>Tipo de disputa</strong></div>
+                        <div><strong>Situação</strong></div>
+                        <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
+                    </DataTableHeader>
         
-                <DataTableBody maxHeight={"350px"} style={{paddingRight: "10px"}}>
-                    {disputas && disputas.length > 0 ? (
-                        disputas.map((disputa) => {
+                    <DataTableBody maxHeight={"350px"} style={{paddingRight: "10px"}}>
+                        {disputas.map((disputa) => {
+                            const textos = extraiNomeDisputa(disputa);
                             return (
-                                <DataRow key={disputa.id} columns="4fr 2fr 2fr 1fr" style={{backgroundColor: "var(--color-bg-light)"}}>
-                                    <DataCell>{disputa.nome}</DataCell>
-                                    <DataCell>Tipo de disputa</DataCell>
-                                    <DataCell>{disputa.situacao}</DataCell>
+                                <DataRow key={disputa.id} columns="3fr 2fr 1fr 1fr" style={{backgroundColor: "var(--color-bg-light)"}}>
+                                    <DataCell>
+                                        <strong>{textos.texto1}</strong> 
+                                        <span style={{marginLeft: "4px", marginRight: "4px"}}>{textos.texto2.length > 0 ? "vs" : ""}</span> 
+                                        <strong>{textos.texto2}</strong>
+                                    </DataCell>
+                                    <DataCell>{getDescricaoTipoDisputaEnum(disputa.tipoDisputa)}</DataCell>
+                                    <DataCell>{getDescricaoSituacaoDisputaEnum(disputa.situacao)}</DataCell>
                                     <DataCell style={{display: "flex", flexDirection: 'column', justifyContent: 'space-between'}}>
-                                        <button onClick={() => () => {}}>
+                                        <button onClick={act}>
                                             Adicionar Notas
                                         </button>
                                     </DataCell>
                                 </DataRow>
                             )
-                        })
-                    ) : (<strong>Nenhuma rodada encontrada criada</strong>)}
-                </DataTableBody>
-            </DataTable>
+                        })}
+                    </DataTableBody>
+                </DataTable>
+            ) : (<DataTableMessageEmpty>Nenhuma disputa encontrada para a rodada</DataTableMessageEmpty>)}
+
+            
         </div>
     );
 }

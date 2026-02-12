@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Input } from "../../../atoms/Input";
 import { Modal } from "../../../modecules/ModalBase";
 import { Pagination } from "../../../modecules/Pagination";
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../../Table";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "../../../Table";
 import { useRouter } from "next/navigation";
 import { AtletaService } from "@/services/atleta-service";
 import { Button } from "../../../atoms/Button";
@@ -127,7 +127,8 @@ export function ConteudoRodasFase({ categoriaId, faseId }: ConteudoFaseCategoria
                     setIsModalOpen(true);
                 }}/>
             </div>
-            <DataTable>
+            {rodadas && rodadas.length > 0 ? (
+                <DataTable>
                 <DataTableHeader columns="2fr 1fr 2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
                     <div><strong>Rodada</strong></div>
                     <div><strong>Tipo da rodada</strong></div>
@@ -137,27 +138,27 @@ export function ConteudoRodasFase({ categoriaId, faseId }: ConteudoFaseCategoria
                 </DataTableHeader>
         
                 <DataTableBody>
-                    {rodadas && rodadas.length > 0 ? (
-                        rodadas.map((rodada) => {
-                            // const isMostraConteudoExpandidoLinha = rodadaAbertaExpandidaId === rodada.id;
-                            const isMostraConteudoExpandidoLinha = rodadasExpandidas.has(rodada.id);
-                            return (
-                                <DataRow key={rodada.id} columns="2fr 1fr 2fr 1fr 1fr" expandContent={<ListagemDisputa faseId={faseId} />} isExpanded={isMostraConteudoExpandidoLinha}>
-                                    <DataCell>{rodada.nome}</DataCell>
-                                    <DataCell>{getDescricaoTipoRodadaEnum(rodada.tipoRodada)}</DataCell>
-                                    <DataCell>{rodada.disputasConcluidas} de {rodada.disputasConcluidas + rodada.disputasPendentes}</DataCell>
-                                    <DataCell>{getDescricaoSituacaoRodadaEnum(rodada.situacao)}</DataCell>
-                                    <DataCell style={{display: "flex", flexDirection: 'column', justifyContent: 'space-between'}}>
-                                        <button onClick={() => ajusteRodadasExpandidas(rodada.id)}>
-                                        {isMostraConteudoExpandidoLinha ? (<p>Esconder</p>) : (<p>Ver</p>)}
-                                        </button>
-                                    </DataCell>
-                                </DataRow>
-                            )
-                        })
-                    ) : (<strong>Nenhuma rodada encontrada criada</strong>)}
+                    {rodadas.map((rodada) => {
+                        // const isMostraConteudoExpandidoLinha = rodadaAbertaExpandidaId === rodada.id;
+                        const isMostraConteudoExpandidoLinha = rodadasExpandidas.has(rodada.id);
+                        return (
+                            <DataRow key={rodada.id} columns="2fr 1fr 2fr 1fr 1fr" expandContent={<ListagemDisputa faseId={faseId} rodadaId={rodada.id} act={() => console.log("Clicou no modal")} />} isExpanded={isMostraConteudoExpandidoLinha}>
+                                <DataCell>{rodada.nome}</DataCell>
+                                <DataCell>{getDescricaoTipoRodadaEnum(rodada.tipoRodada)}</DataCell>
+                                <DataCell>{rodada.disputasConcluidas} de {rodada.disputasConcluidas + rodada.disputasPendentes}</DataCell>
+                                <DataCell>{getDescricaoSituacaoRodadaEnum(rodada.situacao)}</DataCell>
+                                <DataCell style={{display: "flex", flexDirection: 'column', justifyContent: 'space-between'}}>
+                                    <button onClick={() => ajusteRodadasExpandidas(rodada.id)}>
+                                    {isMostraConteudoExpandidoLinha ? (<p>Esconder</p>) : (<p>Ver</p>)}
+                                    </button>
+                                </DataCell>
+                            </DataRow>
+                        )
+                    })}
                 </DataTableBody>
             </DataTable>
+            ) : (<DataTableMessageEmpty>Nenhuma rodada encontrada</DataTableMessageEmpty>)}
+            
         
             <div style={styles.footer}>
                 {rodadas && rodadas.length > 0 && 

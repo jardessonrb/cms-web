@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Input } from "../../../atoms/Input";
 import { Modal } from "../../../modecules/ModalBase";
 import { Pagination } from "../../../modecules/Pagination";
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../../Table";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "../../../Table";
 import { AtletaForm, AtletaListagemDto } from "@/types/atleta";
 import { useRouter } from "next/navigation";
 import { AtletaService } from "@/services/atleta-service";
@@ -109,32 +109,33 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                     setIsModalOpen(true);
                 }}/>
             </div>
-            <DataTable>
-                <DataTableHeader columns="2fr 2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
-                    <div><strong>Número/Apelido</strong></div>
-                    <div><strong>Responsável/Grupo</strong></div>
-                    <div><strong>Graduação</strong></div>
-                    <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
-                </DataTableHeader>
+            {atletas && atletas.length > 0 ? (
+                <DataTable>
+                    <DataTableHeader columns="2fr 2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                        <div><strong>Número/Apelido</strong></div>
+                        <div><strong>Responsável/Grupo</strong></div>
+                        <div><strong>Graduação</strong></div>
+                        <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
+                    </DataTableHeader>
         
-                <DataTableBody>
-                    {atletas && atletas.length > 0 ? (
-                        atletas.map((atleta) => (
-                        <DataRow key={atleta.id} columns="2fr 2fr 1fr 1fr">
-                            <DataCell>{atleta.numero} - {atleta.apelido}</DataCell>
-                            <DataCell>{atleta.responsavel} - {atleta.grupo}</DataCell>
-                            <DataCell>{atleta.graduacao}</DataCell>
-                            <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                            {/* <button onClick={() => router.push(`/atletas/${atleta.id}`)}>
-                                Visualizar
-                            </button> */}
-                            <p>visualizar</p>
-                            </DataCell>
-                        </DataRow>
-                    ))
-                    ) : (<strong>Nenhum competidor encontrado</strong>)}
-                </DataTableBody>
-            </DataTable>
+                    <DataTableBody>
+                        {atletas.map((atleta) => (
+                            <DataRow key={atleta.id} columns="2fr 2fr 1fr 1fr">
+                                <DataCell>{atleta.numero} - {atleta.apelido}</DataCell>
+                                <DataCell>{atleta.responsavel} - {atleta.grupo}</DataCell>
+                                <DataCell>{atleta.graduacao}</DataCell>
+                                <DataCell style={{display: "flex", justifyContent: 'center'}}>
+                                {/* <button onClick={() => router.push(`/atletas/${atleta.id}`)}>
+                                    Visualizar
+                                </button> */}
+                                <p>visualizar</p>
+                                </DataCell>
+                            </DataRow>
+                        ))}
+                    </DataTableBody>
+                </DataTable>
+            ) : (<DataTableMessageEmpty>Nenhum competidor encontrado</DataTableMessageEmpty>)}
+            
         
             <div style={styles.footer}>
                 {atletas && atletas.length > 0 && 

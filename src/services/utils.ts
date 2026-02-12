@@ -26,5 +26,12 @@ export const Utils = {
     const ano = date.getFullYear();
 
     return `${dia}/${mes}/${ano}`;
+  },
+  uniNomeAndApelidoAndNumero(nome: string, apelido: string, numero: number): string {
+    const primeiroNome = nome.split(" ")[0];
+    const numeroExistente = numero ? (numero + " - "): "";
+    const apelidoAjustado = apelido ? `(${apelido})` : ""
+
+    return `${numeroExistente}${primeiroNome}${apelidoAjustado}`;
   }
 };

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Input } from "../../../atoms/Input";
 import { Modal } from "../../../modecules/ModalBase";
 import { Pagination } from "../../../modecules/Pagination";
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../../Table";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "../../../Table";
 import { useRouter } from "next/navigation";
 import { AtletaService } from "@/services/atleta-service";
 import { Button } from "../../../atoms/Button";
@@ -15,7 +15,7 @@ import { AsyncSelect } from "../../../atoms/AsyncSelect";
 import { CategoriaService } from "@/services/categoria-service";
 import { InscricaoAtletaCategoriaForm } from "@/types/inscricao-atleta-categoria";
 import { FaseService } from "@/services/fase-service";
-import { CriteriorEntradaEnum, FaseDto } from "@/types/fase";
+import { CriteriorEntradaEnum, FaseDto, getDescricaoCriteriorEntradaEnum } from "@/types/fase";
 
 type ConteudoFaseCategoriaProps = {
     categoriaId: string
@@ -109,31 +109,32 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                     setIsModalOpen(true);
                 }}/>
             </div>
-            <DataTable>
-                <DataTableHeader columns="2fr 2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
-                    <div><strong>Fase</strong></div>
-                    <div><strong>Critério de entrada</strong></div>
-                    <div><strong>Situação</strong></div>
-                    <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
-                </DataTableHeader>
-        
-                <DataTableBody>
-                    {fases && fases.length > 0 ? (
-                        fases.map((fase) => (
-                        <DataRow key={fase.id} columns="2fr 2fr 1fr 1fr">
-                            <DataCell>{fase.nome}</DataCell>
-                            <DataCell>{fase.criterioEntrada ? CriteriorEntradaEnum[fase.criterioEntrada.toString() as keyof typeof CriteriorEntradaEnum] : ""}</DataCell>
-                            <DataCell>{fase.situacao}</DataCell>
-                            <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                            <button onClick={() => router.push(`/categorias/${categoriaId}/fases/${fase.id}`)}>
-                                Visualizar
-                            </button>
-                            </DataCell>
-                        </DataRow>
-                    ))
-                    ) : (<strong>Nenhuma fase criada</strong>)}
-                </DataTableBody>
-            </DataTable>
+            {fases && fases.length > 0 ? (
+                <DataTable>
+                    <DataTableHeader columns="2fr 2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                        <div><strong>Fase</strong></div>
+                        <div><strong>Critério de entrada</strong></div>
+                        <div><strong>Situação</strong></div>
+                        <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
+                    </DataTableHeader>
+            
+                    <DataTableBody>
+                        {fases.map((fase) => (
+                            <DataRow key={fase.id} columns="2fr 2fr 1fr 1fr">
+                                <DataCell>{fase.nome}</DataCell>
+                                <DataCell>{getDescricaoCriteriorEntradaEnum(fase.criterioEntrada)}</DataCell>
+                                <DataCell>{fase.situacao}</DataCell>
+                                <DataCell style={{display: "flex", justifyContent: 'center'}}>
+                                <button onClick={() => router.push(`/categorias/${categoriaId}/fases/${fase.id}`)}>
+                                    Visualizar
+                                </button>
+                                </DataCell>
+                            </DataRow>
+                        ))}
+                    </DataTableBody>
+                </DataTable>
+
+            ) : (<DataTableMessageEmpty>Nenhuma fase criada</DataTableMessageEmpty>)}
         
             <div style={styles.footer}>
                 {fases && fases.length > 0 && 

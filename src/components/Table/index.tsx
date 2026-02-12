@@ -3,3 +3,4 @@ export { DataTableHeader } from "./DataTableHeader";
 export { DataTableBody } from "./DataTableBody";
 export { DataRow } from "./DataRow";
 export { DataCell } from "./DataCell";
+export { DataTableMessageEmpty } from "./DataTableMessageEmpty";

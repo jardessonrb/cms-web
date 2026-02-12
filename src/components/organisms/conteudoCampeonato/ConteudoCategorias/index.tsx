@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Input } from "../../../atoms/Input";
 import { Modal } from "../../../modecules/ModalBase";
 import { Pagination } from "../../../modecules/Pagination";
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../../Table";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "../../../Table";
 import { useRouter } from "next/navigation";
 import { Button } from "../../../atoms/Button";
 import { Utils } from "@/services/utils";
@@ -95,7 +95,8 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
                     setIsModalOpen(true);
                 }}/>
             </div>
-            <DataTable>
+            {categorias && categorias.length > 0 ? (
+                <DataTable>
                 <DataTableHeader columns="2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
                     <div><strong>Categoria</strong></div>
                     <div><strong>Situação</strong></div>
@@ -103,8 +104,7 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
                 </DataTableHeader>
         
                 <DataTableBody>
-                    {categorias && categorias.length > 0 ? (
-                        categorias.map((categoria) => (
+                    {categorias.map((categoria) => (
                         <DataRow key={categoria.id} columns="2fr 1fr 1fr">
                             <DataCell>{categoria.nome}</DataCell>
                             <DataCell>{categoria.situacao}</DataCell>
@@ -112,10 +112,11 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
                                 <Button mensagem="Visualizar" act={() => router.push(`/categorias/${categoria.id}`)} />
                             </DataCell>
                         </DataRow>
-                    ))
-                    ) : (<strong>Nenhuma categoria encontrada</strong>)}
+                    ))}
                 </DataTableBody>
             </DataTable>
+            ) : 
+            (<DataTableMessageEmpty>Nenhuma categoria encontrada</DataTableMessageEmpty>)}
         
             <div style={styles.footer}>
                 {categorias && categorias.length > 0 && 
