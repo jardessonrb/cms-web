@@ -9,6 +9,7 @@ import { CardTitle } from "../../../atoms/CardTitle";
 import { CategoriaDto } from "@/types/categoria";
 import { CategoriaService } from "@/services/categoria-service";
 import { ConteudoCompetidoresCategoria } from "@/components/organisms/conteudoCategoria/ConteudoCompetidoresCategoria";
+import { ConteudoFaseCategoria } from "../../conteudoCategoria/ConteudoFaseCategoria";
 
 type Props = {
     categoriaId: string
@@ -58,7 +59,7 @@ export default function CategoriaDetalhe({ categoriaId }: Props) {
       <Tab
         tabs={[
           { label: "Competidores", content: <ConteudoCompetidoresCategoria categoriaId={categoriaId} campeonatoId={categoria.campeonatoId}/>},
-          { label: "Fases", content: <div>Fases</div>}
+          { label: "Fases", content: <ConteudoFaseCategoria  categoriaId={categoriaId} campeonatoId={categoria.campeonatoId} />}
         ]}
       />
 
