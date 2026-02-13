@@ -37,7 +37,16 @@ export type NotaForm = {
     juradoId: string
 }
 
-export function getDescricaoTipoRegistroDisputaEnum(e: TipoRegistroDisputaEnum): string {
+export type AtletaNotasForm = {
+    atletaId?: string,
+    notas: NotaForm[]
+}
+
+export type RegistroDeNotasForm = {
+    atletas: AtletaNotasForm[]
+}
+
+export function getDescricaoTipoRegistroDisputaEnum(e: TipoRegistroDisputaEnum | undefined): string {
     if(e == undefined) return "";
     return TipoRegistroDisputaEnum[e.toString() as keyof typeof TipoRegistroDisputaEnum]
 }

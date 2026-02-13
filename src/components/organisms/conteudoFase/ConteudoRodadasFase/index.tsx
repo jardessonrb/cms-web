@@ -20,8 +20,9 @@ import { getDescricaoSituacaoRodadaEnum, getDescricaoTipoRodadaEnum, RodadaDto }
 import { RodadaService } from "@/services/rodada-service";
 import { ListagemDisputa } from "../ListagemDisputa";
 import { CardRegistroDeNotas } from "../CardRegistroDeNotas";
-import { DisputaDto } from "@/types/disputa";
+import { AtletaNotasForm, DisputaDto, NotaForm, RegistroDeNotasForm, TipoDisputaEnum } from "@/types/disputa";
 import { DisputaService } from "@/services/disputa-service";
+import { JuradoService } from "@/services/jurado-service";
 
 type ConteudoFaseCategoriaProps = {
     categoriaId: string
@@ -45,6 +46,11 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
     const [rodadasExpandidas, setRodadasExpandidas] = useState<Set<string>>(new Set());
     const [isModalRegistroNotaOpen, setIsModalRegistroNotaOpen] = useState<boolean>(false);
     const [disputaAtualParaRegistroNota, setDisputaAtualParaRegistroNota] = useState<DisputaDto>()
+    const [registroAtleta1, setRegistroAtleta1] = useState<AtletaNotasForm | null>()
+    const [registroAtleta2, setRegistroAtleta2] = useState<AtletaNotasForm | null>()
+
+    const [jurado, setJurado] = useState<SelectOption>();
+    const [jurados, setJurados] = useState<SelectOption[]>([]);
 
     function mostraRodadas(rodadas: RodadaDto[]){
         setRodadas(rodadas);
@@ -68,6 +74,16 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
         });
     }
 
+    function atualizaJurado(index: number, jurado: SelectOption) {
+        setJurados(prev => {
+            const novo = [...prev];
+
+            novo[index] = jurado;
+        
+            return novo;
+        });
+
+    }
     async function inscreveAtletaEmCategoria(){
         if(!competidor?.id){
             Notify.error(`É preciso escolher uma atleta para inscrever na categoria.`)
@@ -125,6 +141,22 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                 mostraRodadas(page.content)
             })
             .finally(() => setLoading(false));
+    }
+
+    async function salvarNotas(){
+        const registros = [registroAtleta1, registroAtleta2].filter(reg => reg != undefined)
+        for(let i = 0; i < registros.length; i++){
+            for(let j = 0; j < registros[i].notas.length; j++){
+                registros[i].notas[j].juradoId = jurados[j].id
+            }
+        }
+    }
+
+    function closeModalDeRegistroNotas(){
+        setIsModalRegistroNotaOpen(false); 
+        setDisputaAtualParaRegistroNota(undefined)
+        setRegistroAtleta1(null)
+        setRegistroAtleta2(null);
     }
 
     useEffect(() => {
@@ -213,21 +245,89 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                 <Button mensagem="Criar nova fase" act={inscreveAtletaEmCategoria} />
             </Modal>
 
-            <Modal open={isModalRegistroNotaOpen} onClose={() => {setIsModalRegistroNotaOpen(false)}} modalStyle={{maxWidth: "800px"}} title="Registrar Notas">
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" }}>
-                    <CardRegistroDeNotas
-                        registro={disputaAtualParaRegistroNota?.registrosDisputa[0]}
-                        onChangeNotas={(notas) => console.log(notas)}
-                        campeonatoId={campeonatoId}
-                    />
+            <Modal open={isModalRegistroNotaOpen} onClose={() => closeModalDeRegistroNotas()} modalStyle={{maxWidth: "900px"}} title="Registrar Notas da Disputa">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" , gap: "10px" }}>
 
-                    <CardRegistroDeNotas
-                        registro={disputaAtualParaRegistroNota?.registrosDisputa[1]}
-                        onChangeNotas={(notas) => console.log(notas)}
-                        campeonatoId={campeonatoId}
-                    />
+                    <div style={{display: "flex", justifyContent: 'center', alignItems: 'center', maxWidth: "300px"}}>
+                        <CardRegistroDeNotas
+                            registro={disputaAtualParaRegistroNota?.registrosDisputa[0]}
+                            onChangeNotas={(atletaId, notas) => setRegistroAtleta1({atletaId, notas})}
+                            campeonatoId={campeonatoId}
+                        />
+                    </div>
+
+                     <div style={styles.containerEscolhaJuradosContainer}>
+                        <div style={styles.containerEscolhaJuradosHeader}>
+                            <strong>Escolha os Jurados</strong>
+                        </div>
+                        <div style={styles.containerEscolhaJuradosMain}>
+                            <AsyncSelect
+                                placeholder="Escolher Jurado"
+                                value={jurado}
+                                onSelect={(value) => atualizaJurado(0, value)}
+                                fetchOptions={async (query) => {
+                                    const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
+                                    page: 0,
+                                    size: 5,
+                                    filtro: query && query.length >= 3 ? query : undefined,
+                                    });
+                    
+                                    return page.content.map((jurado) => ({
+                                        id: jurado.id,
+                                        label: `${jurado.apelido}-${jurado.grupo}`,
+                                    }));
+                                }}  
+                            />
+
+                            <AsyncSelect
+                                placeholder="Escolher Jurado"
+                                value={jurado}
+                                onSelect={(value) => atualizaJurado(1, value)}
+                                fetchOptions={async (query) => {
+                                    const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
+                                    page: 0,
+                                    size: 5,
+                                    filtro: query && query.length >= 3 ? query : undefined,
+                                    });
+                    
+                                    return page.content.map((jurado) => ({
+                                        id: jurado.id,
+                                        label: `${jurado.apelido}-${jurado.grupo}`,
+                                    }));
+                                }}  
+                            />
+
+                            <AsyncSelect
+                                placeholder="Escolher Jurado"
+                                value={jurado}
+                                onSelect={(value) => atualizaJurado(2, value)}
+                                fetchOptions={async (query) => {
+                                    const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
+                                    page: 0,
+                                    size: 5,
+                                    filtro: query && query.length >= 3 ? query : undefined,
+                                    });
+                    
+                                    return page.content.map((jurado) => ({
+                                        id: jurado.id,
+                                        label: `${jurado.apelido}-${jurado.grupo}`,
+                                    }));
+                                }}  
+                            />
+                        </div>
+                    </div>
+
+                    <div style={{display: "flex", justifyContent: 'center', alignItems: 'center', maxWidth: "300px"}}>
+                        {disputaAtualParaRegistroNota?.tipoDisputa.toUpperCase() === TipoDisputaEnum.DUPLA.toUpperCase() ? (
+                            <CardRegistroDeNotas
+                                registro={disputaAtualParaRegistroNota?.registrosDisputa[1]}
+                                onChangeNotas={(atletaId, notas) => setRegistroAtleta2({atletaId, notas})}
+                                campeonatoId={campeonatoId}
+                            />
+                        ) : (<div>Disputa do tipo individual só permite um competidor</div>)}
+                    </div>                
                 </div>
-                <Button mensagem="Salvar Notas" act={inscreveAtletaEmCategoria} />
+                <Button style={{width: "50%", alignSelf: 'center'}} mensagem="Salvar Notas" act={salvarNotas} />
             </Modal>
         
         </div> 
@@ -251,5 +351,22 @@ const styles: Record<string, React.CSSProperties> = {
         alignItems: 'center',
         flexDirection: 'row',
         padding: "10px 0px"
-  }
+    },
+    containerEscolhaJuradosContainer: {
+        display: "grid",
+        gridTemplateRows: "1fr 1fr",
+        maxWidth: "300px",
+        // backgroundColor: "#9ACD32"
+    },
+    containerEscolhaJuradosHeader: {
+        width: "100%",
+        display: "flex",
+        justifyContent: 'center',
+        // backgroundColor: "#B8860B"
+    },
+    containerEscolhaJuradosMain: {
+        display: "grid",
+        gridTemplateRows: "1fr 1fr 1fr",
+        gap: "10px"
+    }
 };
