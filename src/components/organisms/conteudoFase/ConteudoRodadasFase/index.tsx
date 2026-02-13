@@ -48,6 +48,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
     const [disputaAtualParaRegistroNota, setDisputaAtualParaRegistroNota] = useState<DisputaDto>()
     const [registroAtleta1, setRegistroAtleta1] = useState<AtletaNotasForm | null>()
     const [registroAtleta2, setRegistroAtleta2] = useState<AtletaNotasForm | null>()
+    const [reloadKeyChildren, setReloadKeyChildren] = useState<number>(0)
 
     const [jurado, setJurado] = useState<SelectOption>();
     const [jurados, setJurados] = useState<SelectOption[]>([]);
@@ -144,11 +145,43 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
     }
 
     async function salvarNotas(){
-        const registros = [registroAtleta1, registroAtleta2].filter(reg => reg != undefined)
+        if(jurados.length != 3){
+            Notify.error("Todos os 3 jurados devem estar selecionados.")
+            return;
+        }
+
+        const registros = [registroAtleta1, registroAtleta2].filter(reg => reg != undefined);
         for(let i = 0; i < registros.length; i++){
             for(let j = 0; j < registros[i].notas.length; j++){
                 registros[i].notas[j].juradoId = jurados[j].id
             }
+        }
+
+        if(disputaAtualParaRegistroNota?.id == undefined){
+            Notify.error("É necessário informar a disputa que deve haver registro de notas.")
+            return;
+        }
+
+        const body = {atletas: registros} as RegistroDeNotasForm
+
+        try {
+            const resposta = await DisputaService.registrarNotas(disputaAtualParaRegistroNota.id, body);
+            console.log({resposta})
+            Notify.success("Notas registradas com sucesso.")
+            setIsModalRegistroNotaOpen(false);
+            setDisputaAtualParaRegistroNota(undefined);
+            setRegistroAtleta1(null);
+            setRegistroAtleta2(null);
+            setReloadKeyChildren(prev => prev + 1)
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`${exception.erros[0]}`)
+            }else{
+                Notify.error("Erro desconhecido ao tentar registrar as notas.")
+            }
+
         }
     }
 
@@ -196,7 +229,8 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                         return (
                             <DataRow key={rodada.id} columns="2fr 1fr 2fr 1fr 1fr" 
                                 expandContent={
-                                    <ListagemDisputa 
+                                    <ListagemDisputa
+                                        key={`${rodada.id}-${reloadKeyChildren}`} 
                                         faseId={faseId} 
                                         rodadaId={rodada.id} 
                                         act={disputaId => abrirModalDeRegistroDeNota(disputaId)} 
