@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { lazy, useEffect, useState } from "react";
 import { AsyncSelect } from "@/components/atoms/AsyncSelect";
 import { AtletaService } from "@/services/atleta-service";
 import { getDescricaoTipoRegistroDisputaEnum, NotaForm, RegistroDisputaDto, TipoRegistroDisputaEnum } from "@/types/disputa";
@@ -21,7 +21,12 @@ export type NotaFormProps = {
 }
 
 export function CardRegistroDeNotas({registro, onChangeNotas, campeonatoId }: Props) {
-  const [notas, setNotas] = useState<NotaFormProps[]>([
+  const notasForm: NotaFormProps[] | undefined = registro?.notas.map(nota => {
+      const {notaDoAtleta, notaDaDupla, juradoId, juradoNome} = nota;
+      return {notaDoAtleta, notaDaDupla,jurado: {id: juradoId, label: juradoNome}} as NotaFormProps
+  })
+
+  const [notas, setNotas] = useState<NotaFormProps[]>(notasForm ? notasForm : [
     { notaDoAtleta: 0, notaDaDupla: 0, jurado: {} as SelectOption},
     { notaDoAtleta: 0, notaDaDupla: 0, jurado: {} as SelectOption},
     { notaDoAtleta: 0, notaDaDupla: 0, jurado: {} as SelectOption},

@@ -29,6 +29,15 @@ export type RegistroDisputaDto = {
     apelidoAtleta: string
     atletaId: string
     tipoRegistro: TipoRegistroDisputaEnum
+    notas: NotasDto[]
+}
+
+export type NotasDto = {
+    id: string
+    notaDoAtleta: number
+    notaDaDupla: number
+    juradoId: string
+    juradoNome: string
 }
 
 export type NotaForm = {

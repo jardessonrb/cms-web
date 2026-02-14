@@ -113,6 +113,15 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             const disputaResponse = await DisputaService.buscaDisputaPorId(disputaId);
             setDisputaAtualParaRegistroNota(disputaResponse);
             setIsModalRegistroNotaOpen(true)
+
+            const juradosDasNotas = disputaResponse?.registrosDisputa[0].notas;
+            if(juradosDasNotas && juradosDasNotas.length == 3){
+                const juradosParaSelect: SelectOption[] = juradosDasNotas.map(jurado => {
+                    return {id: jurado.id, label: jurado.juradoNome} as SelectOption
+                })
+
+                setJurados(juradosParaSelect)
+            }
         } catch(error: any){
             if(error.response){
                 const exception = error.response.data as ExceptionDefault;
@@ -166,7 +175,6 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
 
         try {
             const resposta = await DisputaService.registrarNotas(disputaAtualParaRegistroNota.id, body);
-            console.log({resposta})
             Notify.success("Notas registradas com sucesso.")
             setIsModalRegistroNotaOpen(false);
             setDisputaAtualParaRegistroNota(undefined);
@@ -297,7 +305,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                         <div style={styles.containerEscolhaJuradosMain}>
                             <AsyncSelect
                                 placeholder="Escolher Jurado"
-                                value={jurado}
+                                value={jurados.length == 3 ? jurados[0] : {id: "", label: ""}}
                                 onSelect={(value) => atualizaJurado(0, value)}
                                 fetchOptions={async (query) => {
                                     const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
@@ -315,7 +323,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
 
                             <AsyncSelect
                                 placeholder="Escolher Jurado"
-                                value={jurado}
+                                value={jurados.length == 3 ? jurados[1] : {id: "", label: ""}}
                                 onSelect={(value) => atualizaJurado(1, value)}
                                 fetchOptions={async (query) => {
                                     const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
@@ -333,7 +341,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
 
                             <AsyncSelect
                                 placeholder="Escolher Jurado"
-                                value={jurado}
+                                value={jurados.length == 3 ? jurados[2] : {id: "", label: ""}}
                                 onSelect={(value) => atualizaJurado(2, value)}
                                 fetchOptions={async (query) => {
                                     const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
