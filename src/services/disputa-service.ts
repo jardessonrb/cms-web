@@ -19,5 +19,9 @@ export const DisputaService = {
   async registrarNotas(disputaId: string, registroNotasForm: RegistroDeNotasForm): Promise<DisputaDto> {
     const response = await api.post<DisputaDto>(`/disputa/${disputaId}/registrar-notas`, registroNotasForm);
     return response.data;
+  },
+  async atualizarNotas(disputaId: string, registroNotasForm: RegistroDeNotasForm): Promise<DisputaDto> {
+    const response = await api.put<DisputaDto>(`/disputa/${disputaId}/atualizar-notas`, registroNotasForm);
+    return response.data;
   }
 }

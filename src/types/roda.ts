@@ -21,12 +21,12 @@ export enum SituacaoRodadaEnum {
 }
 
 
-export function getDescricaoSituacaoRodadaEnum(e: SituacaoRodadaEnum): string {
+export function getDescricaoSituacaoRodadaEnum(e: SituacaoRodadaEnum | undefined): string {
     if(e == undefined) return "";
     return SituacaoRodadaEnum[e.toString() as keyof typeof SituacaoRodadaEnum]
 }
 
-export function getDescricaoTipoRodadaEnum(e: TipoRodadaEnum): string {
+export function getDescricaoTipoRodadaEnum(e: TipoRodadaEnum | undefined): string {
     if(e == undefined) return "";
     return TipoRodadaEnum[e.toString() as keyof typeof TipoRodadaEnum]
 }

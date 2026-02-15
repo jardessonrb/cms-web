@@ -41,6 +41,7 @@ export type NotasDto = {
 }
 
 export type NotaForm = {
+    notaId: string
     notaDoAtleta: number
     notaDaDupla: number
     juradoId: string
@@ -60,12 +61,12 @@ export function getDescricaoTipoRegistroDisputaEnum(e: TipoRegistroDisputaEnum |
     return TipoRegistroDisputaEnum[e.toString() as keyof typeof TipoRegistroDisputaEnum]
 }
 
-export function getDescricaoSituacaoDisputaEnum(e: SituacaoDisputaEnum): string {
+export function getDescricaoSituacaoDisputaEnum(e: SituacaoDisputaEnum | undefined): string {
     if(e == undefined) return "";
     return SituacaoDisputaEnum[e.toString() as keyof typeof SituacaoDisputaEnum]
 }
 
-export function getDescricaoTipoDisputaEnum(e: TipoDisputaEnum): string {
+export function getDescricaoTipoDisputaEnum(e: TipoDisputaEnum | undefined): string {
     if(e == undefined) return "";
     return TipoDisputaEnum[e.toString() as keyof typeof TipoDisputaEnum]
 }

@@ -15,6 +15,7 @@ type Props = {
 };
 
 export type NotaFormProps = {
+    notaId: string
     notaDoAtleta: number
     notaDaDupla: number
     jurado: SelectOption
@@ -22,14 +23,14 @@ export type NotaFormProps = {
 
 export function CardRegistroDeNotas({registro, onChangeNotas, campeonatoId }: Props) {
   const notasForm: NotaFormProps[] | undefined = registro?.notas.map(nota => {
-      const {notaDoAtleta, notaDaDupla, juradoId, juradoNome} = nota;
-      return {notaDoAtleta, notaDaDupla,jurado: {id: juradoId, label: juradoNome}} as NotaFormProps
+      const {id, notaDoAtleta, notaDaDupla, juradoId, juradoNome} = nota;
+      return {notaId: id, notaDoAtleta, notaDaDupla, jurado: {id: juradoId, label: juradoNome}} as NotaFormProps
   })
 
-  const [notas, setNotas] = useState<NotaFormProps[]>(notasForm ? notasForm : [
-    { notaDoAtleta: 0, notaDaDupla: 0, jurado: {} as SelectOption},
-    { notaDoAtleta: 0, notaDaDupla: 0, jurado: {} as SelectOption},
-    { notaDoAtleta: 0, notaDaDupla: 0, jurado: {} as SelectOption},
+  const [notas, setNotas] = useState<NotaFormProps[]>(notasForm && notasForm.length == 3 ? notasForm : [
+    { notaId: "", notaDoAtleta: 0, notaDaDupla: 0, jurado: {} as SelectOption},
+    { notaId: "", notaDoAtleta: 0, notaDaDupla: 0, jurado: {} as SelectOption},
+    { notaId: "", notaDoAtleta: 0, notaDaDupla: 0, jurado: {} as SelectOption},
   ]);
 
   const atletaId = registro?.atletaId;
@@ -39,6 +40,7 @@ export function CardRegistroDeNotas({registro, onChangeNotas, campeonatoId }: Pr
 
     onChangeNotas(atletaId, notas.map(nota => {
         return {
+            notaId: nota.notaId,
             notaDaDupla: nota.notaDaDupla,
             notaDoAtleta: nota.notaDoAtleta,
             juradoId: nota.jurado.id

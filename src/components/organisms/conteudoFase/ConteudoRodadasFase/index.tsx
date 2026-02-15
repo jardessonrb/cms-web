@@ -20,7 +20,7 @@ import { getDescricaoSituacaoRodadaEnum, getDescricaoTipoRodadaEnum, RodadaDto }
 import { RodadaService } from "@/services/rodada-service";
 import { ListagemDisputa } from "../ListagemDisputa";
 import { CardRegistroDeNotas } from "../CardRegistroDeNotas";
-import { AtletaNotasForm, DisputaDto, NotaForm, RegistroDeNotasForm, TipoDisputaEnum } from "@/types/disputa";
+import { AtletaNotasForm, DisputaDto, getDescricaoSituacaoDisputaEnum, NotaForm, RegistroDeNotasForm, SituacaoDisputaEnum, TipoDisputaEnum } from "@/types/disputa";
 import { DisputaService } from "@/services/disputa-service";
 import { JuradoService } from "@/services/jurado-service";
 
@@ -41,17 +41,14 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
     const [inscricaoAtletaCategoria, setInscricaoAtletaCategoria] = useState(limpaAtletaForm() as InscricaoAtletaCategoriaForm);
     const [competidor, setCompetidor] = useState<SelectOption | null>(null);
 
-    const [isAtivo, setIsAtivo] = useState(false);
-    const [rodadaAbertaExpandidaId, setRodadaAbertaExpandidaId] = useState<string | null>(null);
     const [rodadasExpandidas, setRodadasExpandidas] = useState<Set<string>>(new Set());
     const [isModalRegistroNotaOpen, setIsModalRegistroNotaOpen] = useState<boolean>(false);
     const [disputaAtualParaRegistroNota, setDisputaAtualParaRegistroNota] = useState<DisputaDto>()
     const [registroAtleta1, setRegistroAtleta1] = useState<AtletaNotasForm | null>()
     const [registroAtleta2, setRegistroAtleta2] = useState<AtletaNotasForm | null>()
     const [reloadKeyChildren, setReloadKeyChildren] = useState<number>(0)
-
-    const [jurado, setJurado] = useState<SelectOption>();
     const [jurados, setJurados] = useState<SelectOption[]>([]);
+    const [jurado, setJurado] = useState<SelectOption>();
 
     function mostraRodadas(rodadas: RodadaDto[]){
         setRodadas(rodadas);
@@ -80,7 +77,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             const novo = [...prev];
 
             novo[index] = jurado;
-        
+
             return novo;
         });
 
@@ -114,10 +111,10 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             setDisputaAtualParaRegistroNota(disputaResponse);
             setIsModalRegistroNotaOpen(true)
 
-            const juradosDasNotas = disputaResponse?.registrosDisputa[0].notas;
-            if(juradosDasNotas && juradosDasNotas.length == 3){
-                const juradosParaSelect: SelectOption[] = juradosDasNotas.map(jurado => {
-                    return {id: jurado.id, label: jurado.juradoNome} as SelectOption
+            const notasDoRegistro = disputaResponse?.registrosDisputa[0].notas;
+            if(notasDoRegistro && notasDoRegistro.length == 3){
+                const juradosParaSelect: SelectOption[] = notasDoRegistro.map(nota => {
+                    return {id: nota.juradoId, label: nota.juradoNome} as SelectOption
                 })
 
                 setJurados(juradosParaSelect)
@@ -153,10 +150,10 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             .finally(() => setLoading(false));
     }
 
-    async function salvarNotas(){
+    function geraBodyRegistroDeNotas() : RegistroDeNotasForm | null{
         if(jurados.length != 3){
             Notify.error("Todos os 3 jurados devem estar selecionados.")
-            return;
+            return null;
         }
 
         const registros = [registroAtleta1, registroAtleta2].filter(reg => reg != undefined);
@@ -165,16 +162,24 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                 registros[i].notas[j].juradoId = jurados[j].id
             }
         }
+        const body = {atletas: registros} as RegistroDeNotasForm
 
-        if(disputaAtualParaRegistroNota?.id == undefined){
-            Notify.error("É necessário informar a disputa que deve haver registro de notas.")
+        return body;
+    }
+
+    async function salvarNotas(){
+        const body: RegistroDeNotasForm | null = geraBodyRegistroDeNotas();
+        if(body == null){
             return;
         }
 
-        const body = {atletas: registros} as RegistroDeNotasForm
+        if(disputaAtualParaRegistroNota?.id == undefined){
+            Notify.error("É necessário informar a disputa que deve haver registro de notas.")
+            return null;
+        }
 
         try {
-            const resposta = await DisputaService.registrarNotas(disputaAtualParaRegistroNota.id, body);
+            const resposta = await DisputaService.registrarNotas(disputaAtualParaRegistroNota?.id, body);
             Notify.success("Notas registradas com sucesso.")
             setIsModalRegistroNotaOpen(false);
             setDisputaAtualParaRegistroNota(undefined);
@@ -189,7 +194,36 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             }else{
                 Notify.error("Erro desconhecido ao tentar registrar as notas.")
             }
+        }
+    }
+    
+    async function atualizarNotas(){
+        const body: RegistroDeNotasForm | null = geraBodyRegistroDeNotas();
+        if(body == null){
+            return;
+        }
+        
+        if(disputaAtualParaRegistroNota?.id == undefined){
+            Notify.error("É necessário informar a disputa que deve haver registro de notas.")
+            return null;
+        }
 
+       try {
+            const resposta = await DisputaService.atualizarNotas(disputaAtualParaRegistroNota?.id, body);
+            Notify.success("Notas atualizadas com sucesso.")
+            setIsModalRegistroNotaOpen(false);
+            setDisputaAtualParaRegistroNota(undefined);
+            setRegistroAtleta1(null);
+            setRegistroAtleta2(null);
+            setReloadKeyChildren(prev => prev + 1)
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`${exception.erros[0]}`)
+            }else{
+                Notify.error("Erro desconhecido ao tentar atualizar as notas.")
+            }
         }
     }
 
@@ -305,7 +339,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                         <div style={styles.containerEscolhaJuradosMain}>
                             <AsyncSelect
                                 placeholder="Escolher Jurado"
-                                value={jurados.length == 3 ? jurados[0] : {id: "", label: ""}}
+                                value={jurados.length == 3 ? jurados[0] : jurado}
                                 onSelect={(value) => atualizaJurado(0, value)}
                                 fetchOptions={async (query) => {
                                     const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
@@ -323,7 +357,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
 
                             <AsyncSelect
                                 placeholder="Escolher Jurado"
-                                value={jurados.length == 3 ? jurados[1] : {id: "", label: ""}}
+                                value={jurados.length == 3 ? jurados[1] : jurado}
                                 onSelect={(value) => atualizaJurado(1, value)}
                                 fetchOptions={async (query) => {
                                     const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
@@ -341,7 +375,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
 
                             <AsyncSelect
                                 placeholder="Escolher Jurado"
-                                value={jurados.length == 3 ? jurados[2] : {id: "", label: ""}}
+                                value={jurados.length == 3 ? jurados[2] : jurado}
                                 onSelect={(value) => atualizaJurado(2, value)}
                                 fetchOptions={async (query) => {
                                     const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
@@ -369,7 +403,10 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                         ) : (<div>Disputa do tipo individual só permite um competidor</div>)}
                     </div>                
                 </div>
-                <Button style={{width: "50%", alignSelf: 'center'}} mensagem="Salvar Notas" act={salvarNotas} />
+                <Button style={{width: "50%", alignSelf: 'center'}} 
+                    mensagem={getDescricaoSituacaoDisputaEnum(disputaAtualParaRegistroNota?.situacao).toUpperCase() === SituacaoDisputaEnum.CONCLUIDA.toUpperCase() ? "Atualizar Notas" : "Registrar Notas"} 
+                    act={getDescricaoSituacaoDisputaEnum(disputaAtualParaRegistroNota?.situacao).toUpperCase() === SituacaoDisputaEnum.CONCLUIDA.toUpperCase()  ? atualizarNotas : salvarNotas} 
+                />
             </Modal>
         
         </div> 
