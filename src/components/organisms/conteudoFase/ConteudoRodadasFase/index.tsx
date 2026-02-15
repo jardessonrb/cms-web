@@ -101,33 +101,51 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             }else{
                 Notify.error("Erro desconhecido ao tentar inscrever o competidor no categoria")
             }
-
         }
     }
 
     async function abrirModalDeRegistroDeNota(disputaId: string){
         try {
+
             const disputaResponse = await DisputaService.buscaDisputaPorId(disputaId);
-            setDisputaAtualParaRegistroNota(disputaResponse);
-            setIsModalRegistroNotaOpen(true)
+            console.log("disputaResponse", disputaResponse);
+            const registrosOrdenados = [...(disputaResponse.registrosDisputa ?? [])]
+                .sort((a, b) => a.numeroAtleta - b.numeroAtleta)
+                .map(registro => ({
+                    ...registro,
+                    notas: registro.notas ? [...registro.notas].sort((a, b) =>a.juradoId.localeCompare(b.juradoId)): []
+                }));
 
-            const notasDoRegistro = disputaResponse?.registrosDisputa[0].notas;
-            if(notasDoRegistro && notasDoRegistro.length == 3){
-                const juradosParaSelect: SelectOption[] = notasDoRegistro.map(nota => {
-                    return {id: nota.juradoId, label: nota.juradoNome} as SelectOption
-                })
+            const disputaOrdenada = {
+                ...disputaResponse,
+                registrosDisputa: registrosOrdenados
+            };
 
-                setJurados(juradosParaSelect)
+            setDisputaAtualParaRegistroNota(disputaOrdenada);
+            setIsModalRegistroNotaOpen(true);
+
+            const notasDoRegistro = registrosOrdenados[0]?.notas;
+
+            if (notasDoRegistro && notasDoRegistro.length === 3) {
+                const juradosParaSelect: SelectOption[] = notasDoRegistro.map(nota => ({
+                    id: nota.juradoId,
+                    label: nota.juradoNome
+                }));
+
+                setJurados(juradosParaSelect);
             }
-        } catch(error: any){
-            if(error.response){
+
+        } catch (error: any) {
+
+            if (error.response) {
                 const exception = error.response.data as ExceptionDefault;
-                Notify.error(`${exception.erros[0]}`)
-            }else{
-                Notify.error("Erro desconhecido ao tentar inscrever o competidor no categoria")
+                Notify.error(`${exception.erros[0]}`);
+            } else {
+                Notify.error("Erro desconhecido ao tentar inscrever o competidor na categoria");
             }
 
         }
+
     }
 
     async function carregaDadosComFiltro(){
@@ -394,7 +412,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                     </div>
 
                     <div style={{display: "flex", justifyContent: 'center', alignItems: 'center', maxWidth: "300px"}}>
-                        {disputaAtualParaRegistroNota?.tipoDisputa.toUpperCase() === TipoDisputaEnum.DUPLA.toUpperCase() ? (
+                        {disputaAtualParaRegistroNota?.registrosDisputa.length === 2 ? (
                             <CardRegistroDeNotas
                                 registro={disputaAtualParaRegistroNota?.registrosDisputa[1]}
                                 onChangeNotas={(atletaId, notas) => setRegistroAtleta2({atletaId, notas})}
