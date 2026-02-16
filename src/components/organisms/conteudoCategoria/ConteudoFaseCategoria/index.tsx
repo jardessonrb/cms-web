@@ -152,7 +152,7 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
     }
 
     async function carregaDadosComFiltro(){
-        FaseService.listaFasesPorCategoriaId(categoriaId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 ? termoBusca : undefined)})
+        FaseService.listaFasesPorCategoriaId(categoriaId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)})
             .then((page) => {
                 setPaginaAtual(page.number)
                 setTotalDePaginas(page.totalPages)

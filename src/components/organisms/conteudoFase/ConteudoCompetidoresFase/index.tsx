@@ -37,7 +37,7 @@ export function ConteudoCompetidoresFase({ faseId, campeonatoId }: ConteudoCompe
     }
 
     async function carregaDadosComFiltro(){
-        AtletaService.listaAtletaPorFase(faseId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 ? termoBusca : undefined)})
+        AtletaService.listaAtletaPorFase(faseId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)})
             .then((page) => {
                 setPaginaAtual(page.number)
                 setTotalDePaginas(page.totalPages)

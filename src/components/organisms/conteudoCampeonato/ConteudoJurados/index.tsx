@@ -36,7 +36,7 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
 
     async function carregaDadosComFiltro(){
          try {
-            const juradoResponse: Page<JuradoDto> = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 ? termoBusca : undefined)})
+            const juradoResponse: Page<JuradoDto> = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)})
             setPaginaAtual(juradoResponse.number)
             setTotalDePaginas(juradoResponse.totalPages)
             setJurados(juradoResponse.content)

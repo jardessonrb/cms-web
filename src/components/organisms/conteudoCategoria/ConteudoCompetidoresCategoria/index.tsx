@@ -67,7 +67,7 @@ export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: Con
     }
 
     async function carregaDadosComFiltro(){
-        AtletaService.listaAtletasDaCategoria(categoriaId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 ? termoBusca : undefined)})
+        AtletaService.listaAtletasDaCategoria(categoriaId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)})
             .then((page) => {
                 setPaginaAtual(page.number)
                 setTotalDePaginas(page.totalPages)
@@ -149,7 +149,7 @@ export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: Con
                     value={competidor}
                     onSelect={setCompetidor}
                     fetchOptions={async (query) => {
-                        const page = await AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: 0, size: 5, filtro: (query && query.length >= 3 ? query : undefined)});
+                        const page = await AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: 0, size: 5, filtro: (query && query.length >= 3  || Utils.isNumeroValido(query) ? query : undefined)});
                         return page.content.map((c) => ({
                             id: c.id,
                             label: `${c.numero} - ${c.nome}(${c.apelido})`,

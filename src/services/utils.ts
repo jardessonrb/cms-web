@@ -33,5 +33,10 @@ export const Utils = {
     const apelidoAjustado = apelido ? `(${apelido})` : ""
 
     return `${numeroExistente}${primeiroNome}${apelidoAjustado}`;
+  },
+  isNumeroValido(value?: string): boolean {
+    if (!value) return false;
+
+    return /^[0-9]+$/.test(value);
   }
 };

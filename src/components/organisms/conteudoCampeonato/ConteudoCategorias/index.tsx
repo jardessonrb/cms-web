@@ -29,7 +29,7 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
 
 
     async function carregaDadosComFiltro(){
-        CategoriaService.listaCategoriasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 ? termoBusca : undefined)})
+        CategoriaService.listaCategoriasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3  || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)})
             .then((page) => {
             setPaginaAtual(page.number)
             setTotalDePaginas(page.totalPages)
