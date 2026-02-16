@@ -9,6 +9,11 @@ export type RodadaDto = {
     disputasPendentes: number
 }
 
+export type GeracaoRodadaForm = {
+    nome: string
+    faseId: string
+}
+
 export enum TipoRodadaEnum  {
     NORMAL = "Normal",
     DESEMPATE = "Desempate"

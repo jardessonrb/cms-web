@@ -16,13 +16,14 @@ import { CategoriaService } from "@/services/categoria-service";
 import { InscricaoAtletaCategoriaForm } from "@/types/inscricao-atleta-categoria";
 import { FaseService } from "@/services/fase-service";
 import { CriteriorEntradaEnum, FaseDto } from "@/types/fase";
-import { getDescricaoSituacaoRodadaEnum, getDescricaoTipoRodadaEnum, RodadaDto, SituacaoRodadaEnum } from "@/types/roda";
+import { GeracaoRodadaForm, getDescricaoSituacaoRodadaEnum, getDescricaoTipoRodadaEnum, RodadaDto, SituacaoRodadaEnum } from "@/types/roda";
 import { RodadaService } from "@/services/rodada-service";
 import { ListagemDisputa } from "../ListagemDisputa";
 import { CardRegistroDeNotas } from "../CardRegistroDeNotas";
 import { AtletaNotasForm, DisputaDto, getDescricaoSituacaoDisputaEnum, NotaForm, RegistroDeNotasForm, SituacaoDisputaEnum, TipoDisputaEnum } from "@/types/disputa";
 import { DisputaService } from "@/services/disputa-service";
 import { JuradoService } from "@/services/jurado-service";
+import { error } from "console";
 
 type ConteudoFaseCategoriaProps = {
     categoriaId: string
@@ -38,6 +39,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
     const [totalDePaginas, setTotalDePaginas] = useState(10);
     const [termoBusca, setTermoBusca] = useState<string | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isModalGeracaoFases, setIsModalGeracaoFases] = useState<boolean>(false);
     const [inscricaoAtletaCategoria, setInscricaoAtletaCategoria] = useState(limpaAtletaForm() as InscricaoAtletaCategoriaForm);
     const [competidor, setCompetidor] = useState<SelectOption | null>(null);
 
@@ -49,6 +51,9 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
     const [reloadKeyChildren, setReloadKeyChildren] = useState<number>(0)
     const [jurados, setJurados] = useState<SelectOption[]>([]);
     const [jurado, setJurado] = useState<SelectOption>();
+    const [fase, setFase] = useState<FaseDto>();
+
+    const [rodadasForm, setRodadasForm] = useState<GeracaoRodadaForm[]>([{ nome: "", faseId: faseId }])
 
     function mostraRodadas(rodadas: RodadaDto[]){
         setRodadas(rodadas);
@@ -108,7 +113,6 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
         try {
 
             const disputaResponse = await DisputaService.buscaDisputaPorId(disputaId);
-            console.log("disputaResponse", disputaResponse);
             const registrosOrdenados = [...(disputaResponse.registrosDisputa ?? [])]
                 .sort((a, b) => a.numeroAtleta - b.numeroAtleta)
                 .map(registro => ({
@@ -166,6 +170,12 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                 mostraRodadas(page.content)
             })
             .finally(() => setLoading(false));
+        
+        FaseService.buscaFasePorId(faseId)
+            .then((resultado) => {
+                setFase(resultado)
+            })
+        .catch((error) => console.log("carregaDados", error))
     }
 
     function geraBodyRegistroDeNotas() : RegistroDeNotasForm | null{
@@ -273,6 +283,49 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
         }
     }
 
+    async function gerarRodadas(){
+        try {        
+            const rodadasFormFiltradas: GeracaoRodadaForm[] = rodadasForm.filter(rodada => rodada && rodada.nome && rodada.nome.length > 0);
+            if(rodadasFormFiltradas.length == 0){
+                Notify.error("É necessário criar pelo menos uma rodada válida.")
+                return;
+            }
+
+            const confirmacao = confirm(`Deseja criar ${rodadasFormFiltradas.length} rodadas ?`)
+
+            if(!confirmacao){
+                return;
+            }
+
+            const resposta = await RodadaService.gerarRodadas(faseId, rodadasFormFiltradas);
+            Notify.success(`${resposta.length} geradas com sucesso.`)
+            console.log(resposta)
+            setIsModalGeracaoFases(false);
+            setRodadasForm([])
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`${exception.erros[0]}`)
+            }else{
+                Notify.error("Erro desconhecido ao tentar gerar rodadas.")
+            }
+        }
+    }
+
+    function atualizaNomeRodada(index: number, value: string) {
+        const novasRodadas: GeracaoRodadaForm[] = [...rodadasForm];
+        novasRodadas[index].nome = value;
+        setRodadasForm(novasRodadas);
+    };
+
+    function adicionaRodada(){
+        setRodadasForm(prev => [
+            ...prev,
+            { nome: "", faseId }
+        ]);
+    }
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -289,9 +342,16 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                     />
                     <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
                 </div>
-                <Button mensagem="Criar nova rodada" act={() => {
-                    setIsModalOpen(true);
-                }}/>
+                {fase && fase.quantidadeRodadas == 0 ? (
+                     <Button mensagem="Gerar rodadas" act={() => {
+                        setIsModalGeracaoFases(true);
+                    }}/>
+                ) : (
+                    <Button mensagem="Criar nova rodada" act={() => {
+                        setIsModalOpen(true);
+                    }}/>
+                )}
+                
             </div>
             {rodadas && rodadas.length > 0 ? (
                 <DataTable>
@@ -353,20 +413,28 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                     />
                 }
             </div>
-            <Modal open={isModalOpen} onClose={() => {setIsModalOpen(false), setCompetidor(null)}} title="Criar nova fase">
-                <AsyncSelect
-                    placeholder="Escolher Competidor"
-                    value={competidor}
-                    onSelect={setCompetidor}
-                    fetchOptions={async (query) => {
-                        const page = await AtletaService.listaAtletasDoCampeonato("", {page: 0, size: 5, filtro: (query && query.length >= 3 ? query : undefined)});
-                        return page.content.map((c) => ({
-                            id: c.id,
-                            label: `${c.numero} - ${c.nome}(${c.apelido})`,
-                        }));
-                    }}
-                />
-                <Button mensagem="Criar nova fase" act={inscreveAtletaEmCategoria} />
+            <Modal open={isModalGeracaoFases} onClose={() => {setIsModalGeracaoFases(false)}} title="Gerar rodadas">
+                {rodadasForm.map((rodada, index) => (
+                    <div style={{display: "flex", justifyContent: 'space-between', alignContent: 'center', flexDirection: 'row'}}>
+                        <Input
+                            key={index}
+                            placeholder={`Digite o nome da ${index + 1}° rodada`}
+                            style={{ width: "90%", marginBottom: 8 }}
+                            value={rodada.nome}
+                            onChange={(value) => atualizaNomeRodada(index, value)}
+                        />
+                        {(index + 1) === rodadasForm.length && (
+                            <Button 
+                                key={`b-${index}`}
+                                mensagem="+"
+                                act={() => adicionaRodada()}
+                                style={{padding: "5px 12px"}}
+                            />
+                        )}
+                        
+                    </div>
+                ))}
+                <Button mensagem="Gerar rodadas" act={() => gerarRodadas()} />
             </Modal>
 
             <Modal open={isModalRegistroNotaOpen} onClose={() => closeModalDeRegistroNotas()} modalStyle={{maxWidth: "900px"}} title="Registrar Notas da Disputa">

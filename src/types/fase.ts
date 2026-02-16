@@ -11,6 +11,7 @@ export type FaseDto = {
     quantidadeAtletas: number
     quantidadeAtletasInscritos: number
     ordem: number
+    quantidadeRodadas: number
 }
 
 export type FaseForm = {

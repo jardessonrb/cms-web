@@ -75,7 +75,8 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
       <Tab
         tabs={[
           { label: "Rodadas", content: <ConteudoRodasFase categoriaId={categoriaId} faseId={faseId} campeonatoId={categoria.campeonatoId}/>},
-          { label: "Ranking", content: <div>Ranking</div>}
+          { label: "Ranking", content: <div>Ranking</div>},
+          { label: "Competidores da fase", content: <div>Competidores da fase</div>}
         ]}
       />
 
