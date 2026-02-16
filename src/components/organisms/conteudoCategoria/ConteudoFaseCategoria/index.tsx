@@ -15,7 +15,8 @@ import { AsyncSelect } from "../../../atoms/AsyncSelect";
 import { CategoriaService } from "@/services/categoria-service";
 import { InscricaoAtletaCategoriaForm } from "@/types/inscricao-atleta-categoria";
 import { FaseService } from "@/services/fase-service";
-import { CriteriorEntradaEnum, FaseDto, getDescricaoCriteriorEntradaEnum } from "@/types/fase";
+import { comparaCriteriosEntrada, CriterioEntradaEnum, CriteriorEntradaEnum, FaseDto, FaseForm, getDescricaoCriteriorEntradaEnum } from "@/types/fase";
+import { Select } from "@/components/atoms/Select";
 
 type ConteudoFaseCategoriaProps = {
     categoriaId: string
@@ -33,6 +34,10 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [inscricaoAtletaCategoria, setInscricaoAtletaCategoria] = useState(limpaAtletaForm() as InscricaoAtletaCategoriaForm);
     const [competidor, setCompetidor] = useState<SelectOption | null>(null);
+    const [faseForm, setFaseForm] = useState(limpaFaseForm() as FaseForm);
+    const CRITERIO_ENTRADA_N_PRIMEIROS = "N_PRIMEIROS";
+    const CRITERIO_ENTRADA_TODOS = "TODOS";
+    const [faseAnterior, setFaseAnterior] = useState<SelectOption | null>(null);
 
     function mostraFases(fases: FaseDto[]){
         setFases(fases);
@@ -42,6 +47,16 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
         return {
             atletaId: undefined,
         } as InscricaoAtletaCategoriaForm
+    }
+
+    function limpaFaseForm() : FaseForm{
+        return {
+            categoriaId: undefined,
+            criterioEntrada: undefined,
+            faseAnterior: undefined,
+            nome: undefined,
+            quantidadeAtletas: undefined
+        }
     }
 
     async function inscreveAtletaEmCategoria(){
@@ -64,6 +79,51 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                 Notify.error("Erro desconhecido ao tentar inscrever o competidor no categoria")
             }
 
+        }
+    }
+
+    async function criaNovaFase() {
+        const body = validaFaseForm();
+
+        if(body == null){
+            return;
+        }
+
+        try {
+            const response = await FaseService.criarFase(body);
+            Notify.success(`Fase ${response.nome} criada com sucesso.`)
+            setIsModalOpen(false);
+            setFaseForm(limpaFaseForm())
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`${exception.erros[0]}`)
+            }else{
+                Notify.error(`Erro desconhecido ao tentar criar fase ${body.nome}.`)
+            }
+
+        }
+
+    }
+
+    function validaFaseForm() : FaseForm | null {
+        if(faseForm.criterioEntrada === undefined || faseForm.nome === undefined || faseForm.nome.length == 0){
+            Notify.error("É necessário informar o critério de entrada e o nome.")
+            return null;
+        }
+
+        if(faseForm.criterioEntrada === CRITERIO_ENTRADA_N_PRIMEIROS){
+            if(faseForm.faseAnterior === undefined || faseForm.quantidadeAtletas == undefined || faseForm.nome === undefined){
+                Notify.error("Quando selecionado N primeiros, é necessário fornecer a quantidade e a fase anterior.")
+                return null;
+            }
+        }
+
+        if(faseForm.criterioEntrada === CRITERIO_ENTRADA_TODOS ){
+            return {categoriaId, criterioEntrada: faseForm.criterioEntrada, nome: faseForm.nome} as FaseForm
+        }else{
+            return { ...faseForm, categoriaId} as FaseForm
         }
     }
 
@@ -144,19 +204,51 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                 }
             </div>
             <Modal open={isModalOpen} onClose={() => {setIsModalOpen(false), setCompetidor(null)}} title="Criar nova fase">
-                <AsyncSelect
-                    placeholder="Escolher Competidor"
-                    value={competidor}
-                    onSelect={setCompetidor}
-                    fetchOptions={async (query) => {
-                        const page = await AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: 0, size: 5, filtro: (query && query.length >= 3 ? query : undefined)});
-                        return page.content.map((c) => ({
-                            id: c.id,
-                            label: `${c.numero} - ${c.nome}(${c.apelido})`,
-                        }));
-                    }}
+                <Input 
+                    placeholder="Nome da fase"
+                    value={faseForm.nome}
+                    onChange={v => Utils.updateField(setFaseForm, "nome", v)}
                 />
-                <Button mensagem="Criar nova fase" act={inscreveAtletaEmCategoria} />
+
+                <Select
+                    value={faseForm.criterioEntrada}
+                    onChange={v => Utils.updateField(setFaseForm, "criterioEntrada", v)}
+                    placeholder="Selecione o tipo"
+                    options={Object.entries(CriterioEntradaEnum).map(
+                        ([key, value]) => ({
+                            value: key,
+                            label: value,
+                        }))
+                    }
+                />
+
+                {faseForm.criterioEntrada === CRITERIO_ENTRADA_N_PRIMEIROS ? (
+                    <>
+                        <Input
+                            placeholder="Quantos competidores. Exemplo: 10"
+                            value={String(faseForm.quantidadeAtletas ? faseForm.quantidadeAtletas : "")}
+                            onChange={v => Utils.updateField(setFaseForm, "quantidadeAtletas", Number(v))}
+                        />
+
+                        <AsyncSelect
+                            placeholder="Escolha a categoria anterior"
+                            value={faseAnterior}
+                            onSelect={option => {setFaseAnterior(option), setFaseForm(prev => {return {...prev, faseAnterior: option.id}})}}
+                            fetchOptions={async (query) => {
+                                const page = await FaseService.listaFasesPorCategoriaId(categoriaId, {page: 0, size: 5, sort: ["ordem, desc"], filtro: (query && query.length >= 3 ? query : undefined)});
+                                return page.content.map((fase) => ({
+                                    id: fase.id,
+                                    label: `Ordem: ${fase.ordem} - ${fase.nome}`,
+                                }));
+                            }}
+                        />
+                    </>
+
+
+                ) : 
+                (<></>)}
+
+                <Button mensagem="Criar nova fase" act={() => criaNovaFase()} />
             </Modal>
         
         </div> 

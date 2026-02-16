@@ -16,7 +16,7 @@ import { CategoriaService } from "@/services/categoria-service";
 import { InscricaoAtletaCategoriaForm } from "@/types/inscricao-atleta-categoria";
 import { FaseService } from "@/services/fase-service";
 import { CriteriorEntradaEnum, FaseDto } from "@/types/fase";
-import { getDescricaoSituacaoRodadaEnum, getDescricaoTipoRodadaEnum, RodadaDto } from "@/types/roda";
+import { getDescricaoSituacaoRodadaEnum, getDescricaoTipoRodadaEnum, RodadaDto, SituacaoRodadaEnum } from "@/types/roda";
 import { RodadaService } from "@/services/rodada-service";
 import { ListagemDisputa } from "../ListagemDisputa";
 import { CardRegistroDeNotas } from "../CardRegistroDeNotas";
@@ -252,6 +252,27 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
         setRegistroAtleta2(null);
     }
 
+    async function finalizarRodada(rodadaId: string, nomeRodada: string){
+        try {
+            const confirmacao = confirm(`Deseja realmente encerrar a rodada ${nomeRodada} ?`)
+
+            if(!confirmacao){
+                return;
+            }
+
+            const resposta = await RodadaService.finalizarRodada(rodadaId);
+            Notify.success(`Rodada ${resposta.nome} finalizada com sucesso.`)
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`${exception.erros[0]}`)
+            }else{
+                Notify.error("Erro desconhecido ao tentar finalizar.")
+            }
+        }
+    }
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -301,9 +322,18 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                                 <DataCell>{getDescricaoTipoRodadaEnum(rodada.tipoRodada)}</DataCell>
                                 <DataCell>{rodada.disputasConcluidas} de {rodada.disputasConcluidas + rodada.disputasPendentes}</DataCell>
                                 <DataCell>{getDescricaoSituacaoRodadaEnum(rodada.situacao)}</DataCell>
-                                <DataCell style={{display: "flex", flexDirection: 'column', justifyContent: 'space-between'}}>
+                                <DataCell style={{display: "flex", flexDirection: 'row', justifyContent: 'space-between'}}>
+                                    {rodada.situacao.toUpperCase() != SituacaoRodadaEnum.FINALIZADA.toUpperCase() ? (
+                                        <Button 
+                                            mensagem="Finalizar rodada"
+                                            act={() => finalizarRodada(rodada.id, rodada.nome)}
+                                            isDisable={rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.situacao.toUpperCase() == SituacaoRodadaEnum.FINALIZADA.toUpperCase()}
+                                            style={{opacity: (rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.situacao.toUpperCase() == SituacaoRodadaEnum.FINALIZADA.toUpperCase()) ? "0.5" : "1.0"}}
+                                        />
+                                    ) : (<></>)}
+                                    
                                     <button onClick={() => ajusteRodadasExpandidas(rodada.id)}>
-                                    {isMostraConteudoExpandidoLinha ? (<p>Esconder</p>) : (<p>Ver</p>)}
+                                        {isMostraConteudoExpandidoLinha ? (<p>Esconder</p>) : (<p>Ver</p>)}
                                     </button>
                                 </DataCell>
                             </DataRow>

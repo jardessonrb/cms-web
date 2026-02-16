@@ -11,5 +11,9 @@ export const RodadaService = {
       params: paramsLimpos,
     });
     return response.data;
+  },
+  async finalizarRodada(rodadaId: string): Promise<RodadaDto> {
+    const response = await api.put<RodadaDto>(`/rodada/${rodadaId}/finalizar`);
+    return response.data;
   }
 }

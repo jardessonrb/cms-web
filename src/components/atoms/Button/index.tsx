@@ -6,11 +6,12 @@ type Props = {
     style?: React.CSSProperties,
     mensagem: string,
     act?: () => void
+    isDisable?: boolean
 }
 
-export function Button({ mensagem, style, act }: Props) {
+export function Button({ mensagem, style, act, isDisable = false}: Props) {
   return (
-        <button style={{...styles.button, ...style}} onClick={act}>
+        <button style={{...styles.button, ...style}} disabled={isDisable} onClick={act}>
             {mensagem}
         </button>
   );
