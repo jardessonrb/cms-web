@@ -2,7 +2,7 @@ import { ListParams } from "@/types/default";
 import { Utils } from "./utils";
 import { api } from "./api";
 import { Page } from "@/types/page";
-import { FaseDto, FaseForm } from "@/types/fase";
+import { FaseDto, FaseForm, RankingFaseDto, ValidacaoCorteDto } from "@/types/fase";
 
 export const FaseService = {
   async listaFasesPorCategoriaId(categoriaId: string, params: ListParams): Promise<Page<FaseDto>> {
@@ -18,6 +18,18 @@ export const FaseService = {
   },
   async criarFase(body: Partial<FaseForm>): Promise<FaseDto> {
       const response = await api.post<FaseDto>("/fase", body);
+      return response.data;
+  },
+  async buscaRankingFase(faseId: string): Promise<RankingFaseDto[]> {
+  const response = await api.get<RankingFaseDto[]>(`/fase/${faseId}/pontuacao-parcial`);
+  return response.data;
+  },
+  async finalizarFase(faseId: string): Promise<FaseDto> {
+    const response = await api.put<FaseDto>(`/fase/${faseId}/finalizar`);
+    return response.data;
+  },
+  async validarCorteNovaFase(faseAnteriorId: string, quantidadeAtletas: number): Promise<ValidacaoCorteDto> {
+      const response = await api.post<ValidacaoCorteDto>("/fase/fase-anterior/{faseAnteriorId}/atletas/{quantidadeAtletas}/validar-corte", {});
       return response.data;
   },
 }

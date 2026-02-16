@@ -54,6 +54,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
     const [fase, setFase] = useState<FaseDto>();
 
     const [rodadasForm, setRodadasForm] = useState<GeracaoRodadaForm[]>([{ nome: "", faseId: faseId }])
+    const SITUACAO_RODADA_FINALIZADA = "FINALIZADA"
 
     function mostraRodadas(rodadas: RodadaDto[]){
         setRodadas(rodadas);
@@ -213,6 +214,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             setDisputaAtualParaRegistroNota(undefined);
             setRegistroAtleta1(null);
             setRegistroAtleta2(null);
+            setJurados([])
             setReloadKeyChildren(prev => prev + 1)
             await carregaDados();      
         } catch(error: any){
@@ -326,6 +328,28 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
         ]);
     }
 
+    async function finalizarFase(faseId:string) {
+         try {        
+            const confirmacao = confirm(`Deseja finalizar a fase ${fase?.nome} ?`)
+
+            if(!confirmacao){
+                return;
+            }
+
+            const resposta = await FaseService.finalizarFase(faseId);
+            Notify.success(`Fase ${resposta.nome} finalizada com sucesso.`)
+            console.log(resposta)
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`${exception.erros[0]}`)
+            }else{
+                Notify.error("Erro desconhecido ao tentar finalizar fase.")
+            }
+        }
+    }
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -342,15 +366,28 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                     />
                     <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
                 </div>
-                {fase && fase.quantidadeRodadas == 0 ? (
-                     <Button mensagem="Gerar rodadas" act={() => {
-                        setIsModalGeracaoFases(true);
-                    }}/>
-                ) : (
-                    <Button mensagem="Criar nova rodada" act={() => {
-                        setIsModalOpen(true);
-                    }}/>
-                )}
+                <div>
+                    {(rodadas && rodadas.every(rodada => rodada.situacao.toUpperCase() === SITUACAO_RODADA_FINALIZADA) && fase?.situacao.toUpperCase() != SITUACAO_RODADA_FINALIZADA) && (
+                        <Button 
+                            mensagem="Finalizar Fase" 
+                            act={() => finalizarFase(faseId)}
+                            style={{marginRight: "10px"}}
+                        />
+                    )}
+                    {(fase && fase?.situacao.toUpperCase() != SITUACAO_RODADA_FINALIZADA) && (
+                        <>
+                            {fase && fase.quantidadeRodadas == 0 ? (
+                                <Button mensagem="Gerar rodadas" act={() => {
+                                    setIsModalGeracaoFases(true);
+                                }}/>
+                            ) : (
+                                <Button mensagem="Criar nova rodada" act={() => {
+                                    setIsModalOpen(true);
+                                }}/>
+                            )}
+                        </>
+                    )}
+                </div>
                 
             </div>
             {rodadas && rodadas.length > 0 ? (

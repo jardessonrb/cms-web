@@ -89,6 +89,30 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
             return;
         }
 
+        if(!body.faseAnterior || !body.quantidadeAtletas){
+            return;
+        }
+
+        try{
+            const validacao = await FaseService.validarCorteNovaFase(body.faseAnterior, body.quantidadeAtletas);
+
+            if(validacao.quantidadeEmpatados > 0){
+                const confirmacao = confirm(`A fase anterior possui ${validacao.quantidadeEmpatados} empatados. Deseja criar uma nova rodada de desempate na fase ${faseAnterior?.label} ?`)
+
+                if(!confirmacao){
+                    return;
+                }
+            }
+        }catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`${exception.erros[0]}`)
+            }else{
+                Notify.error(`Erro desconhecido ao tentar validar a criação da nova fase ${body.nome}.`)
+            }
+
+        }
+
         try {
             const response = await FaseService.criarFase(body);
             Notify.success(`Fase ${response.nome} criada com sucesso.`)

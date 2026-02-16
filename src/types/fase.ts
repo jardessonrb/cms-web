@@ -22,6 +22,30 @@ export type FaseForm = {
   faseAnterior: string | undefined
 }
 
+export type RankingFaseDto = {
+  atletaId: number
+  categoria: string
+  fase: string
+  competidor: string
+  numeroCompetidor: number
+  partidas: number
+  partidasConcluidas: number
+  notaIndividual: number
+  notaDupla: number
+  total: number
+  posicao: number
+}
+
+export type ValidacaoCorteDto = {
+  quantidadeEmpatados:  number
+  atletasEmpatados: AtletaEmpatadoDto[]
+}
+
+export type AtletaEmpatadoDto = {
+  atletaUuid: string
+  atletaNome: string
+}
+
 export enum CriterioEntradaEnum {
   TODOS = "Todos",
   N_PRIMEIROS = "N primeiros"

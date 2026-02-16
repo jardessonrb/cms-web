@@ -45,4 +45,11 @@ export const AtletaService = {
     });
     return response.data;
   },
+  async listaAtletaPorFase(faseId: string, params: ListParams): Promise<Page<AtletaListagemDto>> {
+    const paramsLimpos = Utils.removeChavesSemValor(params);
+    const response = await api.get<Page<AtletaListagemDto>>(`/atleta/fase/${faseId}`, {
+      params: paramsLimpos,
+    });
+    return response.data;
+  },
 };

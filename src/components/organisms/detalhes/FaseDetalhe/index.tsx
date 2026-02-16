@@ -11,6 +11,8 @@ import { CategoriaService } from "@/services/categoria-service";
 import { FaseDto, getDescricaoCriteriorEntradaEnum } from "@/types/fase";
 import { FaseService } from "@/services/fase-service";
 import { ConteudoRodasFase } from "../../conteudoFase/ConteudoRodadasFase";
+import { ConteudoCompetidoresFase } from "../../conteudoFase/ConteudoCompetidoresFase";
+import { CardRankingFase } from "../../conteudoFase/CardRankingFase";
 
 type Props = {
     categoriaId: string,
@@ -75,8 +77,8 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
       <Tab
         tabs={[
           { label: "Rodadas", content: <ConteudoRodasFase categoriaId={categoriaId} faseId={faseId} campeonatoId={categoria.campeonatoId}/>},
-          { label: "Ranking", content: <div>Ranking</div>},
-          { label: "Competidores da fase", content: <div>Competidores da fase</div>}
+          { label: "Ranking", content: <CardRankingFase faseId={faseId} campeonatoId={categoria.campeonatoId} />},
+          { label: "Competidores da fase", content: <ConteudoCompetidoresFase faseId={faseId} campeonatoId={categoria.campeonatoId}/>}
         ]}
       />
 
