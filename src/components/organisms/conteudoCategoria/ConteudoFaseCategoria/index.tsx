@@ -89,19 +89,22 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
             return;
         }
 
-        if(!body.faseAnterior || !body.quantidadeAtletas){
+        if(body.criterioEntrada === CRITERIO_ENTRADA_N_PRIMEIROS && (!body.faseAnterior || !body.quantidadeAtletas)){
             return;
         }
 
         try{
-            const validacao = await FaseService.validarCorteNovaFase(body.faseAnterior, body.quantidadeAtletas);
-
-            if(validacao.quantidadeEmpatados > 0){
-                const confirmacao = confirm(`A fase anterior possui ${validacao.quantidadeEmpatados} competidores empatados. Deseja criar uma nova rodada de desempate na fase ${faseAnterior?.label} ?`)
-
-                if(!confirmacao){
-                    return;
+            if(body.criterioEntrada === CRITERIO_ENTRADA_N_PRIMEIROS && body.faseAnterior && body.quantidadeAtletas){
+                const validacao = await FaseService.validarCorteNovaFase(body.faseAnterior, body.quantidadeAtletas);
+    
+                if(validacao.quantidadeEmpatados > 0){
+                    const confirmacao = confirm(`A fase anterior possui ${validacao.quantidadeEmpatados} competidores empatados. Deseja criar uma nova rodada de desempate na fase ${faseAnterior?.label} ?`)
+    
+                    if(!confirmacao){
+                        return;
+                    }
                 }
+            
             }
         }catch(error: any){
             if(error.response){

@@ -6,6 +6,7 @@ export type JuradoDto = {
 }
 
 export type JuradoForm = {
+    juradoId: string | undefined
     nome: string | undefined,
     apelido: string | undefined,
     grupo: string | undefined,

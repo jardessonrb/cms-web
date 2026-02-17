@@ -37,6 +37,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
 
     function limpaAtletaForm(){
         return {
+            atletaId: undefined,
             nome: undefined,
             numero: undefined,
             apelido: undefined,
@@ -89,6 +90,55 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
         .finally(() => setLoading(false));
     }
 
+    async function abrirModalAtualizacao(atletaId: string){
+        const atletaParaAtualizacao = atletas.filter(a => a.id === atletaId)[0];
+        const {apelido, cidade, dataNascimento, graduacao, nome, numero, responsavel, grupo, categoriaId, categoria} = atletaParaAtualizacao;
+
+        setAtletaForm({
+            apelido,
+            atletaId,
+            campeonatoId,
+            cidade, 
+            dataNascimento, 
+            graduacao, 
+            grupo: grupo != null ? grupo : undefined, 
+            nome, 
+            numero: numero != null ? numero : undefined, 
+            responsavel,
+            categoriaId: categoriaId != null ? categoriaId :  undefined
+        })
+
+        if(categoriaId != null && categoria != null){
+            setCategoria({id: categoriaId, label: categoria})
+        }
+
+        setIsModalOpen(true)
+    }
+
+    async function atualizaCompetidor() {
+        try {
+            if(!atletaForm.atletaId){
+                Notify.error("É necessário informar o id para atualizar o competidor");
+                return;
+            }
+
+            const atletaComCategoria = {...atletaForm, categoriaId: categoria?.id}
+            const response = await AtletaService.atualizar(atletaForm.atletaId, atletaComCategoria);
+            Notify.success("Competidor atualizado com sucesso.")
+            setIsModalOpen(false);
+            setAtletaForm(limpaAtletaForm())
+            setCategoria(null)
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`Não foi possível atualizar o competidor.${exception.erros[0]}`)
+            }
+
+            Notify.error("Erro desconhecido ao tentar atualizar o competidor")
+        }
+    }
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -111,24 +161,25 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             </div>
             {atletas && atletas.length > 0 ? (
                 <DataTable>
-                    <DataTableHeader columns="2fr 2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                    <DataTableHeader columns="1fr 1fr 1fr 1fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
                         <div><strong>Número/Apelido</strong></div>
+                        <div><strong>Nome</strong></div>
                         <div><strong>Responsável/Grupo</strong></div>
                         <div><strong>Graduação</strong></div>
+                        <div><strong>Categoria</strong></div>
                         <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
                     </DataTableHeader>
         
                     <DataTableBody>
                         {atletas.map((atleta) => (
-                            <DataRow key={atleta.id} columns="2fr 2fr 1fr 1fr">
+                            <DataRow key={atleta.id} columns="1fr 1fr 1fr 1fr 1fr 1fr">
                                 <DataCell>{atleta.numero} - {atleta.apelido}</DataCell>
+                                <DataCell>{atleta.nome}</DataCell>
                                 <DataCell>{atleta.responsavel} - {atleta.grupo}</DataCell>
                                 <DataCell>{atleta.graduacao}</DataCell>
+                                <DataCell>{atleta.categoriaId != null ? atleta.categoria : "Sem inscrição"}</DataCell>
                                 <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                                {/* <button onClick={() => router.push(`/atletas/${atleta.id}`)}>
-                                    Visualizar
-                                </button> */}
-                                <p>visualizar</p>
+                                    <Button mensagem="Editar" act={() => abrirModalAtualizacao(atleta.id)}/>
                                 </DataCell>
                             </DataRow>
                         ))}
@@ -146,7 +197,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                     />
                 }
             </div>
-            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title="Novo Competidor">
+            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title={atletaForm.atletaId ? "Atualizar Competidor" : "Novo Competidor"}>
                 <Input
                     placeholder="Nome"
                     value={atletaForm.nome}
@@ -154,7 +205,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                 />
                 <Input
                     placeholder="Número"
-                    value={String(atletaForm.numero ? atletaForm.numero : 0)}
+                    value={atletaForm.numero && Utils.isNumeroValido(String(atletaForm.numero)) ? String(atletaForm.numero) : undefined}
                     onChange={v => Utils.updateField(setAtletaForm, "numero", Number(v))}
                 />
                 <Input
@@ -192,7 +243,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                 <AsyncSelect
                     placeholder="Escolher categoria"
                     value={categoria}
-                    onSelect={setCategoria}
+                    onSelect={({id, label}) => label && label.length > 0 ? setCategoria({id, label}) : setCategoria({id: "", label: ""})}
                     fetchOptions={async (query) => {
                         const page = await CategoriaService.listaCategoriasDoCampeonato(campeonatoId, {page: 0, size: 5, filtro: (query && query.length >= 3 ? query : undefined)});
                         return page.content.map((c) => ({
@@ -201,7 +252,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                         }));
                     }}
                 />
-                <Button mensagem="Cadastrar Atleta" act={cadastraAtleta} />
+                {atletaForm.atletaId ? (<Button mensagem="Atualizar Competidor" act={() => atualizaCompetidor()} />) : (<Button mensagem="Cadastrar Competidor" act={() => cadastraAtleta()} />)}
             </Modal>
         
         </div> 

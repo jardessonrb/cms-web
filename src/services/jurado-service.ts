@@ -17,4 +17,8 @@ export const JuradoService = {
         const response = await api.post<JuradoDto>("/jurado", body);
         return response.data;
     },
+    async atualizarJurado(juradoId: string, body: JuradoForm): Promise<JuradoDto> {
+        const response = await api.put<JuradoDto>(`/jurado/${juradoId}`, body);
+        return response.data;
+    },
 }

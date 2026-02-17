@@ -108,25 +108,22 @@ export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: Con
             </div>
             {atletas && atletas.length > 0 ? (
                 <DataTable>
-                    <DataTableHeader columns="2fr 2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                    <DataTableHeader columns="2fr 2fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
                         <div><strong>Número/Apelido</strong></div>
                         <div><strong>Responsável/Grupo</strong></div>
                         <div><strong>Graduação</strong></div>
-                        <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
+                        {/* <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div> */}
                     </DataTableHeader>
         
                     <DataTableBody>
                         {atletas.map((atleta) => (
-                            <DataRow key={atleta.id} columns="2fr 2fr 1fr 1fr">
+                            <DataRow key={atleta.id} columns="2fr 2fr 1fr">
                                 <DataCell>{atleta.numero} - {atleta.apelido}</DataCell>
                                 <DataCell>{atleta.responsavel} - {atleta.grupo}</DataCell>
                                 <DataCell>{atleta.graduacao}</DataCell>
-                                <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                                {/* <button onClick={() => router.push(`/atletas/${atleta.id}`)}>
-                                    Visualizar
-                                </button> */}
-                                <p>visualizar</p>
-                                </DataCell>
+                                {/* <DataCell style={{display: "flex", justifyContent: 'center'}}>
+                                    <p>visualizar</p>
+                                </DataCell> */}
                             </DataRow>
                         ))}
                     </DataTableBody>

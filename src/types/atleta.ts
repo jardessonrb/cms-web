@@ -9,9 +9,12 @@ export type AtletaListagemDto = {
     grupo: string,
     graduacao: string,
     criadoEm: string,
+    categoriaId: string | null
+    categoria: string | null
 }
 
 export type AtletaForm = {
+    atletaId: string | undefined
     nome: string | undefined,
     numero: number | undefined,
     apelido: string | undefined,

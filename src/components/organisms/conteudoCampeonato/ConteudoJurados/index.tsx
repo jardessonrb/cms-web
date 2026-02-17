@@ -53,6 +53,7 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
 
     function iniciaJuradoForm() : JuradoForm {
         return {
+            juradoId: undefined,
             nome: undefined,
             apelido: undefined,
             grupo: undefined,
@@ -87,6 +88,43 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
         .finally(() => setLoading(false));
     }
 
+    function abrirModalAtualizacao(juradoId: string){
+        const juradoParaAtualizacao: JuradoDto = jurados.filter(j => j.id === juradoId)[0];
+
+        const juradoFormUpdate = {
+            apelido: juradoParaAtualizacao.apelido,
+            campeonatoId: campeonatoId,
+            grupo: juradoParaAtualizacao.grupo,
+            nome: juradoParaAtualizacao.nome,
+            juradoId: juradoParaAtualizacao.id
+        } as JuradoForm;
+
+        setJuradoForm(juradoFormUpdate);
+        setIsModalOpen(true)
+    }
+
+    async function atualizarJurado(){
+        try {
+            if(!juradoForm.juradoId){
+                Notify.error("É necessário informar o id para atualizar o jurado");
+                return;
+            }
+
+            const response: JuradoDto = await JuradoService.atualizarJurado(juradoForm.juradoId, juradoForm);
+            Notify.success("Jurado atualizado com sucesso.")
+            setIsModalOpen(false);
+            setJuradoForm(iniciaJuradoForm())
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar atualizar o jurado")
+            }
+        }
+    }
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -109,7 +147,7 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
             </div>
             {jurados && jurados.length > 0 ? (
                 <DataTable>
-                    <DataTableHeader columns="2fr 1fr 2fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                    <DataTableHeader columns="2fr 2fr 2fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
                         <div><strong>Nome</strong></div>
                         <div><strong>Apelido</strong></div>
                         <div><strong>Grupo/Escola</strong></div>
@@ -118,15 +156,12 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
             
                     <DataTableBody>
                         {jurados.map((jurado) => (
-                            <DataRow key={jurado.id} columns="2fr 1fr 2fr 1fr">
+                            <DataRow key={jurado.id} columns="2fr 2fr 2fr 1fr">
                                 <DataCell>{jurado.nome}</DataCell>
                                 <DataCell>{jurado.apelido}</DataCell>
                                 <DataCell>{jurado.grupo}</DataCell>
                                 <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                                {/* <button onClick={() => router.push(`/atletas/${atleta.id}`)}>
-                                    Visualizar
-                                </button> */}
-                                <p>visualizar</p>
+                                    <Button mensagem="Editar" act={() => abrirModalAtualizacao(jurado.id)}/>
                                 </DataCell>
                             </DataRow>
                         ))}
@@ -143,7 +178,7 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
                     />
                 }
             </div>
-            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title="Novo Jurado">
+            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title={juradoForm.juradoId ? "Atualizar Jurado" : "Cadastrar Jurado"}>
                <Input
                     placeholder="Nome do jurado"
                     value={juradoForm.nome}
@@ -159,7 +194,8 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
                     value={juradoForm.grupo}
                     onChange={v => Utils.updateField(setJuradoForm, "grupo", v)}
                 />
-                <Button mensagem="Cadastrar jurado" act={cadastraJurado} />
+                {juradoForm.juradoId ? (<Button mensagem="Atualizar jurado" act={() => atualizarJurado()} />) : (<Button mensagem="Cadastrar jurado" act={() => cadastraJurado()} />)}
+                
             </Modal>
         
         </div> 
