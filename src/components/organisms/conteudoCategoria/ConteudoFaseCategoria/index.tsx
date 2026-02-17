@@ -97,7 +97,7 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
             const validacao = await FaseService.validarCorteNovaFase(body.faseAnterior, body.quantidadeAtletas);
 
             if(validacao.quantidadeEmpatados > 0){
-                const confirmacao = confirm(`A fase anterior possui ${validacao.quantidadeEmpatados} empatados. Deseja criar uma nova rodada de desempate na fase ${faseAnterior?.label} ?`)
+                const confirmacao = confirm(`A fase anterior possui ${validacao.quantidadeEmpatados} competidores empatados. Deseja criar uma nova rodada de desempate na fase ${faseAnterior?.label} ?`)
 
                 if(!confirmacao){
                     return;

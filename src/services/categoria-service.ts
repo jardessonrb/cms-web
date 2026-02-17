@@ -24,5 +24,9 @@ export const CategoriaService = {
     async inscreverAtletaEmCategoria(categoriaId: string, atletaId: string): Promise<void> {
         await api.post<void>(`/categoria/${categoriaId}/atleta/${atletaId}/inscrever`);
         return;
-    }
+    },
+    async atualizarCategoria(categoriaId: string, body: CategoriaForm): Promise<CategoriaDto> {
+        const response = await api.put<CategoriaDto>(`/categoria/${categoriaId}`, body);
+        return response.data;
+    },
 }

@@ -8,7 +8,8 @@ export type CategoriaDto = {
     quantidadeFases: number | null
 }
 
-export type CategoriaForm = {
+export type CategoriaForm =  {
+    categoriaId: string | undefined
     nome: string | undefined
     campeonatoId: string
 }

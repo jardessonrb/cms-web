@@ -40,6 +40,7 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
 
     function iniciaCategoriaForm(){
         return {
+            categoriaId: undefined,
             nome: undefined,
             campeonatoId
         }
@@ -64,6 +65,31 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
         }
     }
 
+    async function atualizarCategoria(){
+        try {
+
+            if(!categoriaForm.categoriaId){
+                Notify.error("É necessário ter o id da categoria para atualizar.")
+                return;
+            }
+            
+            const response = await CategoriaService.atualizarCategoria(categoriaForm.categoriaId , categoriaForm);
+            Notify.success("Categoria atualizada com sucesso.")
+            setIsModalOpen(false);
+            setCategoriaForm(iniciaCategoriaForm())
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar cadastrar categoria")
+            }
+
+        }
+    }
+
+
     async function carregaDados(){
         CategoriaService.listaCategoriasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10})
         .then((page) => {
@@ -72,6 +98,20 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
         setCategorias(page.content)
         })
         .finally(() => setLoading(false));
+    }
+
+    function setarCategoriaPorId(categoriaId: string){
+        const categoriasPorId: CategoriaDto[] = categorias.filter(c => c.id === categoriaId)
+        if(categoriasPorId.length > 0){
+            const categoriaFormUpdate = {
+                categoriaId: categoriasPorId[0].id,
+                nome: categoriasPorId[0].nome,
+                campeonatoId: categoriasPorId[0].campeonatoId
+            } as CategoriaForm;
+
+            setCategoriaForm(categoriaFormUpdate)
+            setIsModalOpen(true)
+        }
     }
 
     useEffect(() => {
@@ -107,8 +147,9 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
                         <DataRow key={categoria.id} columns="2fr 1fr 1fr">
                             <DataCell>{categoria.nome}</DataCell>
                             <DataCell>{categoria.situacao}</DataCell>
-                            <DataCell style={{display: "flex", justifyContent: 'center'}}>
+                            <DataCell style={{display: "flex", justifyContent: 'space-evenly'}}>
                                 <Button mensagem="Visualizar" act={() => router.push(`/categorias/${categoria.id}`)} />
+                                <Button mensagem="Editar" act={() => setarCategoriaPorId(categoria.id)} />
                             </DataCell>
                         </DataRow>
                     ))}
@@ -132,7 +173,11 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
                     value={categoriaForm.nome}
                     onChange={v => Utils.updateField(setCategoriaForm, "nome", v)}
                 />
-                <Button mensagem="Cadastrar Categoria" act={cadastraCategoria} />
+                {categoriaForm.categoriaId ? 
+                    (<Button mensagem="Atualizar categoria" act={() => atualizarCategoria()}/> ) : 
+                    (<Button mensagem="Cadastrar Categoria" act={() => cadastraCategoria()} />)
+                }
+                
             </Modal>
         
         </div> 

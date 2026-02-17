@@ -29,7 +29,7 @@ export const FaseService = {
     return response.data;
   },
   async validarCorteNovaFase(faseAnteriorId: string, quantidadeAtletas: number): Promise<ValidacaoCorteDto> {
-      const response = await api.post<ValidacaoCorteDto>("/fase/fase-anterior/{faseAnteriorId}/atletas/{quantidadeAtletas}/validar-corte", {});
+      const response = await api.post<ValidacaoCorteDto>(`/fase/fase-anterior/${faseAnteriorId}/atletas/${quantidadeAtletas}/validar-corte`, {});
       return response.data;
   },
 }
