@@ -197,7 +197,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             </div>
             {atletas && atletas.length > 0 ? (
                 <DataTable>
-                    <DataTableHeader columns="1fr 1fr 1fr 1fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                    <DataTableHeader columns="1fr 1fr 2fr 1fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px", gap:"10px"}}>
                         <div><strong>Número/Apelido</strong></div>
                         <div><strong>Nome</strong></div>
                         <div><strong>Responsável/Grupo</strong></div>
@@ -208,7 +208,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
         
                     <DataTableBody>
                         {atletas.map((atleta) => (
-                            <DataRow key={atleta.id} columns="1fr 1fr 1fr 1fr 1fr 1fr">
+                            <DataRow key={atleta.id} columns="1fr 1fr 2fr 1fr 1fr 1fr" style={{gap: "10px"}}>
                                 <DataCell>{atleta.numero} - {atleta.apelido}</DataCell>
                                 <DataCell>{atleta.nome}</DataCell>
                                 <DataCell>{atleta.responsavel} - {atleta.grupo}</DataCell>
