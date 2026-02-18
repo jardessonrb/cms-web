@@ -1,6 +1,6 @@
 import { api } from "./api";
 import { Page } from "../types/page";
-import { AtletaForm, AtletaListagemDto } from "../types/atleta";
+import { AtletaForm, AtletaListagemDto, RetornoImportacaoAtletasDto } from "../types/atleta";
 import { Utils } from "./utils";
 import { ListParams } from "../types/default";
 
@@ -52,4 +52,18 @@ export const AtletaService = {
     });
     return response.data;
   },
+  async importarCSV(campeonatoId: string, file: File): Promise<RetornoImportacaoAtletasDto> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post<RetornoImportacaoAtletasDto>(`/atleta/campeonato/${campeonatoId}/importar`,
+      formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      }
+    );
+
+    return response.data;
+  }
 };

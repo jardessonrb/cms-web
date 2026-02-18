@@ -26,3 +26,9 @@ export type AtletaForm = {
     campeonatoId: string | undefined,
     categoriaId: string | undefined,
 }
+
+export type RetornoImportacaoAtletasDto = {
+    quantidadeCategoriasCriadas: number
+    quantidadeDeAtletasCriados: number
+    registrosEnviados: number
+}

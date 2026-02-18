@@ -19,7 +19,6 @@ type ConteudoCompetidoresProps = {
     campeonatoId: string
 }
 
-
 export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps){
     const router = useRouter();
     const [loading, setLoading] = useState(true);
@@ -30,6 +29,8 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [atletaForm, setAtletaForm] = useState(limpaAtletaForm() as AtletaForm);
     const [categoria, setCategoria] = useState<SelectOption | null>(null);
+    const [isModalImportacaoOpen, setIsModalImportacaoOpen] = useState<boolean>(false);
+    const [arquivoSelecionado, setArquivoSelecionado] = useState<File | null>(null);
 
     function mostraAtletas(atletas: AtletaListagemDto[]){
         setAtletas(atletas);
@@ -139,6 +140,36 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
         }
     }
 
+    function handleSelecionarArquivo(event: React.ChangeEvent<HTMLInputElement>) {
+        const file = event.target.files?.[0];
+
+        if (!file) return;
+
+        if (!file.name.endsWith(".csv")) {
+            Notify.info("Selecione um arquivo CSV válido.");
+            return;
+        }
+
+        setArquivoSelecionado(file);
+    };
+
+    async function handleImportar(){
+        if (!arquivoSelecionado) {
+            Notify.info("Selecione um arquivo antes de importar.");
+            return;
+        }
+
+        const resposta = await AtletaService.importarCSV(campeonatoId, arquivoSelecionado);
+        Notify.success(`Arquivo processado com sucesso. ${resposta.registrosEnviados} registros enviados, ${resposta.quantidadeDeAtletasCriados} competidores criados e ${resposta.quantidadeCategoriasCriadas} categorias criadas`, {duration: 3000})
+        setTimeout(() => {
+            setIsModalImportacaoOpen(false);
+            setArquivoSelecionado(null);
+            // router.refresh();
+            window.location.reload();
+        }, 3000);
+    };
+
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -155,9 +186,14 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                     />
                     <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
                 </div>
-                <Button mensagem="Cadastrar Novo Competidor" act={() => {
-                    setIsModalOpen(true);
-                }}/>
+                <div style={{display: "flex", justifyContent: "space-evenly", gap: "20px"}}>
+                    <Button mensagem="Importação de Competidores" act={() => {
+                        setIsModalImportacaoOpen(true);
+                    }}/>
+                    <Button mensagem="Cadastrar Novo Competidor" act={() => {
+                        setIsModalOpen(true);
+                    }}/>
+                </div>
             </div>
             {atletas && atletas.length > 0 ? (
                 <DataTable>
@@ -254,7 +290,36 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                 />
                 {atletaForm.atletaId ? (<Button mensagem="Atualizar Competidor" act={() => atualizaCompetidor()} />) : (<Button mensagem="Cadastrar Competidor" act={() => cadastraAtleta()} />)}
             </Modal>
-        
+            <Modal open={isModalImportacaoOpen} onClose={() => {setIsModalImportacaoOpen(false), setArquivoSelecionado(null)}} title="Importação de Competidores">
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    <label style={{ cursor: "pointer" }}>
+                    <input
+                        type="file"
+                        accept=".csv"
+                        style={{ display: "none" }}
+                        onChange={handleSelecionarArquivo}
+                    />
+                    <div style={{
+                        padding: "10px 16px",
+                        // backgroundColor: "#1976d2",
+                        color: "var(--color-confirm)",
+                        borderRadius: 6,
+                        textAlign: "center"
+                        }}>
+                        Selecionar Arquivo CSV
+                    </div>
+                    </label>
+
+                    {/* Nome do arquivo */}
+                    {arquivoSelecionado && (
+                        <span>
+                        Arquivo selecionado: <strong>{arquivoSelecionado.name}</strong>
+                        </span>
+                    )}
+
+                    <Button act={handleImportar} isDisable={!arquivoSelecionado} style={{opacity: !arquivoSelecionado ? "0.5" : undefined}} mensagem="Importar"/>
+                </div>
+            </Modal>        
         </div> 
     );
 }
