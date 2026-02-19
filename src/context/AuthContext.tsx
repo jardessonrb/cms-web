@@ -35,17 +35,26 @@ export function AuthProvider({
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
-  const isAuthenticated = !!token;
+//   const isAuthenticated = !!token;
+    const isAuthenticated = true;
 
   // 🔹 Recupera sessão ao iniciar app
   useEffect(() => {
-    const storedToken = localStorage.getItem("cms_token");
-    const storedUser = localStorage.getItem("cms_user");
+    // const storedToken = localStorage.getItem("cms_token");
+    // const storedUser = localStorage.getItem("cms_user");
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
+    const mockUser = {
+      id: "1",
+      nome: "Jardesson Dev",
+      email: "dev@cms.com"
+    };
+
+    // if (storedToken && storedUser) {
+    //   setToken(storedToken);
+    //   setUser(JSON.parse(storedUser));
+    // }
+
+    setUser(mockUser);
   }, []);
 
   function login({ token, user }: { token: string; user: User }) {

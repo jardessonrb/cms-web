@@ -1,4 +1,3 @@
-import CategoriaDetalhe from "@/components/organisms/detalhes/CategoriaDetalhe";
 import FaseDetalhe from "@/components/organisms/detalhes/FaseDetalhe";
 
 type Props = {
