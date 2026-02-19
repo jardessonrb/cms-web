@@ -11,6 +11,7 @@ export type AtletaListagemDto = {
     criadoEm: string,
     categoriaId: string | null
     categoria: string | null
+    situacao: SituacaoAtletaEnum | null
 }
 
 export type AtletaForm = {
@@ -31,4 +32,14 @@ export type RetornoImportacaoAtletasDto = {
     quantidadeCategoriasCriadas: number
     quantidadeDeAtletasCriados: number
     registrosEnviados: number
+}
+
+export enum SituacaoAtletaEnum {
+    ATIVO = "Ativo",
+    CANCELADO = "Cancelado"
+}
+
+export function getDescricaoSituacaoAtletaEnum(e: SituacaoAtletaEnum | undefined | null): string {
+    if(e == undefined || e === null) return "";
+    return SituacaoAtletaEnum[e.toString() as keyof typeof SituacaoAtletaEnum]
 }

@@ -24,6 +24,7 @@ export type FaseForm = {
 
 export type RankingFaseDto = {
   atletaId: number
+  situacao: string
   categoria: string
   fase: string
   competidor: string

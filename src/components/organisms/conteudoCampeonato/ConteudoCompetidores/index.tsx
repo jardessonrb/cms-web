@@ -5,7 +5,7 @@ import { Input } from "../../../atoms/Input";
 import { Modal } from "../../../modecules/ModalBase";
 import { Pagination } from "../../../modecules/Pagination";
 import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "../../../Table";
-import { AtletaForm, AtletaListagemDto } from "@/types/atleta";
+import { AtletaForm, AtletaListagemDto, getDescricaoSituacaoAtletaEnum } from "@/types/atleta";
 import { useRouter } from "next/navigation";
 import { AtletaService } from "@/services/atleta-service";
 import { Button } from "../../../atoms/Button";
@@ -82,13 +82,15 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     }
 
     async function carregaDados(){
-        AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10})
-        .then((page) => {
-        setPaginaAtual(page.number)
-        setTotalDePaginas(page.totalPages)
-        mostraAtletas(page.content)
-        })
-        .finally(() => setLoading(false));
+        if(!termoBusca || termoBusca?.length == 0){
+            AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10})
+            .then((page) => {
+            setPaginaAtual(page.number)
+            setTotalDePaginas(page.totalPages)
+            mostraAtletas(page.content)
+            })
+            .finally(() => setLoading(false));
+        }
     }
 
     async function abrirModalAtualizacao(atletaId: string){
@@ -167,7 +169,30 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             // router.refresh();
             window.location.reload();
         }, 3000);
-    };
+    }
+
+    async function cancelarAtleta(atletaId: string){
+        
+        try {
+            const confirmacao = confirm("Deseja realmente cancelar ? Ao cancelar, todas as disputas do atleta serão não pontuadas. A ação não poderá ser desfeita.")
+        
+            if(!confirmacao){
+                return;
+            }
+
+            const response = await AtletaService.cancelarAtleta(atletaId);
+            Notify.success("Competidor cancelado com sucesso.")
+            setTermoBusca(undefined)
+            await carregaDados();      
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(`Não foi possível cancelar o competidor.${exception.erros[0]}`)
+            }
+
+            Notify.error("Erro desconhecido ao tentar cancelar o competidor")
+        }
+    }
 
 
     useEffect(() => {
@@ -197,25 +222,30 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             </div>
             {atletas && atletas.length > 0 ? (
                 <DataTable>
-                    <DataTableHeader columns="1fr 1fr 2fr 1fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px", gap:"10px"}}>
+                    <DataTableHeader columns="1fr 1fr 2fr 1fr 1fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px", gap:"10px"}}>
                         <div><strong>Número/Apelido</strong></div>
                         <div><strong>Nome</strong></div>
                         <div><strong>Responsável/Grupo</strong></div>
                         <div><strong>Graduação</strong></div>
                         <div><strong>Categoria</strong></div>
+                        <div><strong>Situação</strong></div>
                         <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
                     </DataTableHeader>
         
                     <DataTableBody>
                         {atletas.map((atleta) => (
-                            <DataRow key={atleta.id} columns="1fr 1fr 2fr 1fr 1fr 1fr" style={{gap: "10px"}}>
+                            <DataRow key={atleta.id} columns="1fr 1fr 2fr 1fr 1fr 1fr 1fr" style={{gap: "10px"}}>
                                 <DataCell>{atleta.numero} - {atleta.apelido}</DataCell>
                                 <DataCell>{atleta.nome}</DataCell>
                                 <DataCell>{atleta.responsavel} - {atleta.grupo}</DataCell>
                                 <DataCell>{atleta.graduacao}</DataCell>
                                 <DataCell>{atleta.categoriaId != null ? atleta.categoria : "Sem inscrição"}</DataCell>
-                                <DataCell style={{display: "flex", justifyContent: 'center'}}>
+                                <DataCell>{getDescricaoSituacaoAtletaEnum(atleta.situacao)}</DataCell>
+                                <DataCell style={{display: "flex", justifyContent: 'center', flexDirection:"row", gap: "20px"}}>
                                     <Button mensagem="Editar" act={() => abrirModalAtualizacao(atleta.id)}/>
+                                    <Button mensagem="Cancelar" act={() => cancelarAtleta(atleta.id)}
+                                        style={{backgroundColor: "var(--color-error)"}}
+                                    />
                                 </DataCell>
                             </DataRow>
                         ))}

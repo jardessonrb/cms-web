@@ -53,9 +53,10 @@ export function CardRankingFase({ faseId, campeonatoId }: ConteudoCompetidoresPr
             </div>
             {rankingDaFase && rankingDaFase.length > 0 ? (
                 <DataTable>
-                    <DataTableHeader columns="1fr 2fr 1fr 1fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                    <DataTableHeader columns="1fr 2fr 1fr 1fr 1fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
                         <div><strong>Posição</strong></div>
                         <div><strong>Competidor</strong></div>
+                        <div><strong>Situação</strong></div>
                         <div><strong>Rodadas Disputadas</strong></div>
                         <div><strong>Nota Individual Total</strong></div>
                         <div><strong>Nota Por Dupla Total</strong></div>
@@ -65,9 +66,10 @@ export function CardRankingFase({ faseId, campeonatoId }: ConteudoCompetidoresPr
         
                     <DataTableBody maxHeight="800px">
                         {rankingDaFase.map((pontuacao) => (
-                            <DataRow key={pontuacao.atletaId} columns="1fr 2fr 1fr 1fr 1fr 1fr">
+                            <DataRow key={pontuacao.atletaId} columns="1fr 2fr 1fr 1fr 1fr 1fr 1fr" style={{backgroundColor: (pontuacao.situacao === "CANCELADO" ? "var(--color-error-opc)" : "var(--color-bg)")}}>
                                 <DataCell>{pontuacao.posicao}°</DataCell>
                                 <DataCell>{pontuacao.competidor}({pontuacao.numeroCompetidor})</DataCell>
+                                <DataCell>{pontuacao.situacao}</DataCell>
                                 <DataCell>{pontuacao.partidasConcluidas} de {pontuacao.partidas}</DataCell>
                                 <DataCell>{pontuacao.notaIndividual}</DataCell>
                                 <DataCell>{pontuacao.notaDupla}</DataCell>

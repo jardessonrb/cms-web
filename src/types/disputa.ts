@@ -1,6 +1,7 @@
 export enum SituacaoDisputaEnum {
     PENDENTE = "Pendente",
-    CONCLUIDA = "Concluída"
+    CONCLUIDA = "Concluída",
+    CANCELADA = "Cancelada"
 }
 
 export enum TipoRegistroDisputaEnum {

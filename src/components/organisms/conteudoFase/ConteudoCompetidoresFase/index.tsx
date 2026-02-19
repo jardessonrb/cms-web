@@ -5,7 +5,7 @@ import { Input } from "../../../atoms/Input";
 import { Modal } from "../../../modecules/ModalBase";
 import { Pagination } from "../../../modecules/Pagination";
 import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "../../../Table";
-import { AtletaForm, AtletaListagemDto } from "@/types/atleta";
+import { AtletaForm, AtletaListagemDto, getDescricaoSituacaoAtletaEnum } from "@/types/atleta";
 import { useRouter } from "next/navigation";
 import { AtletaService } from "@/services/atleta-service";
 import { Button } from "../../../atoms/Button";
@@ -78,22 +78,21 @@ export function ConteudoCompetidoresFase({ faseId, campeonatoId }: ConteudoCompe
             </div>
             {atletas && atletas.length > 0 ? (
                 <DataTable>
-                    <DataTableHeader columns="2fr 2fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                    <DataTableHeader columns="1fr 2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
                         <div><strong>Número/Apelido</strong></div>
                         <div><strong>Responsável/Grupo</strong></div>
                         <div><strong>Graduação</strong></div>
+                        <div><strong>Situação</strong></div>
                         {/* <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div> */}
                     </DataTableHeader>
         
                     <DataTableBody>
                         {atletas.map((atleta) => (
-                            <DataRow key={atleta.id} columns="2fr 2fr 1fr">
+                            <DataRow key={atleta.id} columns="1fr 2fr 1fr 1fr">
                                 <DataCell>{atleta.numero} - {atleta.apelido}</DataCell>
                                 <DataCell>{atleta.responsavel} - {atleta.grupo}</DataCell>
                                 <DataCell>{atleta.graduacao}</DataCell>
-                                {/* <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                                    <p>visualizar</p>
-                                </DataCell> */}
+                                <DataCell>{getDescricaoSituacaoAtletaEnum(atleta.situacao)}</DataCell>
                             </DataRow>
                         ))}
                     </DataTableBody>

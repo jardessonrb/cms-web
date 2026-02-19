@@ -65,5 +65,9 @@ export const AtletaService = {
     );
 
     return response.data;
-  }
+  },
+  async cancelarAtleta(atletaId: string): Promise<void> {
+    const response = await api.put<void>(`/atleta/${atletaId}/cancelar`);
+    return response.data;
+  },
 };

@@ -19,5 +19,9 @@ export const RodadaService = {
   async gerarRodadas(faseId: string, rodadasForms: GeracaoRodadaForm[]): Promise<RodadaDto[]> {
     const response = await api.post<RodadaDto[]>(`/rodada/fase/${faseId}/gerar-rodadas`, rodadasForms);
     return response.data;
+  },
+  async criarNovaRodada(rodadaForm: GeracaoRodadaForm): Promise<RodadaDto> {
+    const response = await api.post<RodadaDto>(`/rodada`, rodadaForm);
+    return response.data;
   }
 }
