@@ -148,7 +148,7 @@ export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: Con
                     value={competidor}
                     onSelect={setCompetidor}
                     fetchOptions={async (query) => {
-                        const page = await AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: 0, size: 5, filtro: (query && query.length >= 3  || Utils.isNumeroValido(query) ? query : undefined)});
+                        const page = await AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: 0, size: 5, situacao: 'ATIVO', filtro: (query && query.length >= 3  || Utils.isNumeroValido(query) ? query : undefined)});
                         return page.content.map((c) => ({
                             id: c.id,
                             label: `${c.numero} - ${c.nome}(${c.apelido})`,

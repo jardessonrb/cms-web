@@ -10,6 +10,7 @@ export interface ListParams {
   size: number;
   filtro?: string | undefined
   sort?: string[]
+  situacao?: string
 }
 
 export type SelectOption = {
