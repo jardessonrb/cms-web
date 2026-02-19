@@ -5,13 +5,12 @@ export const api = axios.create({
   timeout: 10000,
 });
 
-/*
-// 👉 Exemplo de interceptor (deixe comentado por enquanto)
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("cms_token");
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
-*/

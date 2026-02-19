@@ -1,20 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { use, useEffect, useState } from "react";
 
 export default function Header() {
+  const { user, logout, isAuthenticated, login } = useAuth();
   const [title, setTitle] = useState("CMS");
   const userName = "Jardesson"; // mock por enquanto
 
 
   useEffect(() => {
+    login({token: "algum token aqui", user: {id: "", nome: "Járdesson", email: "jardesson@cms.com"}})
     setTitle(document.title.replace("CMS | ", ""));
   }, []);
 
   return (
     <header style={styles.header}>
       <div style={styles.left}>CMS</div>
-      <div style={styles.right}>{userName}</div>
+      {isAuthenticated ? (<div style={styles.right}>{`Olá, ${user?.nome}`}</div>) : (<p>Deslogado</p>)}
+      
     </header>
   );
 }

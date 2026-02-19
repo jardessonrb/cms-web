@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Roboto } from "next/font/google";
 import "./globals.css";
 import Header from "../components/header";
 import { Toaster } from "react-hot-toast";
-
+import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
   title: {
@@ -37,20 +37,22 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${roboto.variable}`} style={styles.bodyStyle}>
-        <Header />
-        {children}
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            style: {
-              background: "var(--color-bg-light)",
-              color: "var(--color-text)",
-              border: "1px solid #e5e7eb",
-              height: "100px",
-              width: '30%'
-            },
-          }}
-        />
+        <AuthProvider>
+          <Header />
+          {children}
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              style: {
+                background: "var(--color-bg-light)",
+                color: "var(--color-text)",
+                border: "1px solid #e5e7eb",
+                height: "100px",
+                width: '30%'
+              },
+            }}
+            />
+        </AuthProvider>
       </body>
     </html>
   );
