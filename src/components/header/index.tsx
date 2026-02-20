@@ -55,7 +55,7 @@ export default function Header() {
           )}
         </div>
       ) : (
-        <p>Deslogado</p>
+        <></>
       )}
     </header>
   );

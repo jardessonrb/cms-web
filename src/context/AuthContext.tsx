@@ -15,7 +15,7 @@ type User = {
   email: string;
 };
 
-type AuthContextType = {
+export type AuthContextType = {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
@@ -35,39 +35,39 @@ export function AuthProvider({
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
-//   const isAuthenticated = !!token;
-    const isAuthenticated = true;
+  const isAuthenticated = !!token;
+    // const isAuthenticated = true;
 
   // 🔹 Recupera sessão ao iniciar app
   useEffect(() => {
-    // const storedToken = localStorage.getItem("cms_token");
-    // const storedUser = localStorage.getItem("cms_user");
+    const storedToken = localStorage.getItem("@cms_token");
+    const storedUser = localStorage.getItem("@cms_user");
 
-    const mockUser = {
-      id: "1",
-      nome: "Jardesson Dev",
-      email: "dev@cms.com"
-    };
+    // const mockUser = {
+    //   id: "1",
+    //   nome: "Jardesson Dev",
+    //   email: "dev@cms.com"
+    // };
 
-    // if (storedToken && storedUser) {
-    //   setToken(storedToken);
-    //   setUser(JSON.parse(storedUser));
-    // }
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
+    }
 
-    setUser(mockUser);
+    // setUser(mockUser);
   }, []);
 
   function login({ token, user }: { token: string; user: User }) {
-    localStorage.setItem("cms_token", token);
-    localStorage.setItem("cms_user", JSON.stringify(user));
+    localStorage.setItem("@cms_token", token);
+    localStorage.setItem("@cms_user", JSON.stringify(user));
 
     setToken(token);
     setUser(user);
   }
 
   function logout() {
-    localStorage.removeItem("cms_token");
-    localStorage.removeItem("cms_user");
+    localStorage.removeItem("@cms_token");
+    localStorage.removeItem("@cms_user");
 
     setToken(null);
     setUser(null);

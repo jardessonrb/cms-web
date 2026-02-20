@@ -7,6 +7,8 @@
 //   }>;
 // };
 
+import { ConteudoLogin } from "@/components/organisms/conteudoLogin";
+
 export default async function Login() {
-  return <h1>Login</h1>
+  return <ConteudoLogin />
 }
