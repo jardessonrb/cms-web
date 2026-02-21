@@ -24,6 +24,8 @@ import { AtletaNotasForm, DisputaDto, getDescricaoSituacaoDisputaEnum, getDescri
 import { DisputaService } from "@/services/disputa-service";
 import { JuradoService } from "@/services/jurado-service";
 import { error } from "console";
+import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
+import Image from "next/image";
 
 type ConteudoFaseCategoriaProps = {
     categoriaId: string
@@ -356,6 +358,18 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
         }
     }
 
+    function definirCorConformeSituacao(situacao: string) : SituacaoType {
+        if(situacao === "Ativa" || situacao === "Criada"){
+          return "SUCCESS"
+        }
+    
+        if(situacao === "Finalizada"){
+          return "CONFIRM"
+        }
+    
+        return "DANGER"
+    }
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -380,7 +394,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                             style={{marginRight: "10px"}}
                         />
                     )}
-                    {(fase && fase?.situacao.toUpperCase() != SITUACAO_RODADA_FINALIZADA && fase.situacao != "AGUARDANDO_DESEMPATE" && fase.situacao != "AGUARDANDO_DESEMPATE") && (
+                    {(fase && fase?.situacao.toUpperCase() != SITUACAO_RODADA_FINALIZADA && fase.situacao.toUpperCase() != "AGUARDANDO_DESEMPATE") && (
                         <>
                             {fase && fase.quantidadeRodadas == 0 ? (
                                 <Button mensagem="Gerar rodadas" act={() => {
@@ -398,7 +412,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             </div>
             {rodadas && rodadas.length > 0 ? (
                 <DataTable>
-                <DataTableHeader columns="2fr 1fr 2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                <DataTableHeader columns="1fr 1fr 1fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
                     <div><strong>Rodada</strong></div>
                     <div><strong>Tipo da rodada</strong></div>
                     <div><strong>Disputas Concluídas</strong></div>
@@ -411,7 +425,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                         // const isMostraConteudoExpandidoLinha = rodadaAbertaExpandidaId === rodada.id;
                         const isMostraConteudoExpandidoLinha = rodadasExpandidas.has(rodada.id);
                         return (
-                            <DataRow key={rodada.id} columns="2fr 1fr 2fr 1fr 1fr" 
+                            <DataRow key={rodada.id} columns="1fr 1fr 1fr 1fr 1fr" 
                                 expandContent={
                                     <ListagemDisputa
                                         key={`${rodada.id}-${reloadKeyChildren}`} 
@@ -424,7 +438,9 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                                 <DataCell>{rodada.nome}</DataCell>
                                 <DataCell>{getDescricaoTipoRodadaEnum(rodada.tipoRodada)}</DataCell>
                                 <DataCell>{rodada.disputasConcluidas} de {rodada.disputasConcluidas + rodada.disputasPendentes}</DataCell>
-                                <DataCell>{getDescricaoSituacaoRodadaEnum(rodada.situacao)}</DataCell>
+                                <DataCell>
+                                    <SituacaoEstilizada children={getDescricaoSituacaoRodadaEnum(rodada.situacao)} funcType={situacao => definirCorConformeSituacao(situacao)} />
+                                </DataCell>
                                 <DataCell style={{display: "flex", flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center'}}>
                                     {rodada.situacao.toUpperCase() != SituacaoRodadaEnum.FINALIZADA.toUpperCase() ? (
                                         <Button 
@@ -435,8 +451,13 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                                         />
                                     ) : (<></>)}
                                     
-                                    <button onClick={() => ajusteRodadasExpandidas(rodada.id)}>
-                                        {isMostraConteudoExpandidoLinha ? (<p>Esconder</p>) : (<p>Ver</p>)}
+                                   <button onClick={() => ajusteRodadasExpandidas(rodada.id)} style={{ border: "none", background: "none", cursor: "pointer"}}>
+                                        <Image
+                                            src={isMostraConteudoExpandidoLinha ? "/up-arrow.svg" : "/down-arrow.svg"}
+                                            alt="toggle"
+                                            width={16}
+                                            height={16}
+                                        />
                                     </button>
                                 </DataCell>
                             </DataRow>

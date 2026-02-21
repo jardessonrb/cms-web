@@ -11,7 +11,8 @@ import { Utils } from "@/services/utils";
 import { Notify } from "@/lib/notify";
 import { ExceptionDefault } from "@/types/default";
 import { CategoriaService } from "@/services/categoria-service";
-import { CategoriaDto, CategoriaForm } from "@/types/categoria";
+import { CategoriaDto, CategoriaForm, getDescricaoSituacaoCategoriaEnum } from "@/types/categoria";
+import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
 
 type ConteudoCategoriasProps = {
     campeonatoId: string
@@ -114,6 +115,18 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
         }
     }
 
+    function definirCorConformeSituacao(situacao: string) : SituacaoType {
+        if(situacao === "Ativa" || situacao === "Criada"){
+          return "SUCCESS"
+        }
+    
+        if(situacao === "Finalizada"){
+          return "CONFIRM"
+        }
+    
+        return "DANGER"
+      }
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -136,7 +149,7 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
             </div>
             {categorias && categorias.length > 0 ? (
                 <DataTable>
-                <DataTableHeader columns="2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                <DataTableHeader columns="2fr 2fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
                     <div><strong>Categoria</strong></div>
                     <div><strong>Situação</strong></div>
                     <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
@@ -144,9 +157,13 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
         
                 <DataTableBody>
                     {categorias.map((categoria) => (
-                        <DataRow key={categoria.id} columns="2fr 1fr 1fr">
-                            <DataCell>{categoria.nome}</DataCell>
-                            <DataCell>{categoria.situacao}</DataCell>
+                        <DataRow key={categoria.id} columns="2fr 2fr 1fr">
+                            <DataCell>
+                                <span style={{fontWeight: "bold", textTransform: "uppercase"}}>{categoria.nome}</span>
+                            </DataCell>
+                            <DataCell>
+                                <SituacaoEstilizada children={getDescricaoSituacaoCategoriaEnum(categoria.situacao)} funcType={situacao => definirCorConformeSituacao(situacao)} />
+                            </DataCell>
                             <DataCell style={{display: "flex", justifyContent: 'space-evenly'}}>
                                 <Button mensagem="Visualizar" act={() => router.push(`/categorias/${categoria.id}`)} />
                                 <Button mensagem="Editar" act={() => setarCategoriaPorId(categoria.id)} />

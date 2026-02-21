@@ -1,3 +1,5 @@
+import { SituacaoType } from "@/components/atoms/SituacaoEstilizada";
+
 export const Utils = {
   removeChavesSemValor<T extends Record<string, any>>(obj: T): Partial<T> {
     return Object.fromEntries(
@@ -38,5 +40,16 @@ export const Utils = {
     if (!value) return false;
 
     return /^[0-9]+$/.test(value);
+  },
+  definirCorConformeSituacaoAtleta(situacao: string) : SituacaoType {
+    if(situacao === "Ativo" || situacao === "Criado"){
+      return "SUCCESS"
+    }
+
+    if(situacao === "Finalizado"){
+      return "CONFIRM"
+    }
+
+    return "DANGER"
   }
 };

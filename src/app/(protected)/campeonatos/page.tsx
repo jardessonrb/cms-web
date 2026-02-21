@@ -9,10 +9,11 @@ import { Button } from "../../../components/atoms/Button";
 import { Modal } from "../../../components/modecules/ModalBase";
 import { Input } from "../../../components/atoms/Input";
 import { Pagination } from "../../../components/modecules/Pagination";
-import { CampeonatoDto, CampeonatoForm } from "../../../types/campeonato";
+import { CampeonatoDto, CampeonatoForm, getDescricaoSituacaoCampeonatoEnum } from "../../../types/campeonato";
 import { Notify } from "@/lib/notify";
 import { Utils } from "@/services/utils";
 import { ExceptionDefault } from "@/types/default";
+import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
 
 export default function CampeonatosPage() {
   const [campeonatos, setCampeonatos] = useState<CampeonatoDto[]>([]);
@@ -99,6 +100,18 @@ export default function CampeonatosPage() {
     }
   }
 
+  function definirCorConformeSituacao(situacao: string) : SituacaoType {
+    if(situacao === "Ativo" || situacao === "Criado"){
+      return "SUCCESS"
+    }
+
+    if(situacao === "Finalizado"){
+      return "CONFIRM"
+    }
+
+    return "DANGER"
+  }
+
   useEffect(() => {
     carregaDados();
   }, [paginaAtual]);
@@ -122,7 +135,10 @@ export default function CampeonatosPage() {
           {campeonatos.map((campeonatoDto) => (
             <DataRow key={campeonatoDto.id} columns="3fr 1fr 1fr">
               <DataCell>{campeonatoDto.nome}</DataCell>
-              <DataCell>{campeonatoDto.situacao}</DataCell>
+              <DataCell>
+                <SituacaoEstilizada children={getDescricaoSituacaoCampeonatoEnum(campeonatoDto.situacao)} funcType={situacao => definirCorConformeSituacao(situacao)}/>
+                {/* {getDescricaoSituacaoCampeonatoEnum(campeonatoDto.situacao)} */}
+              </DataCell>
               <DataCell style={{display: "flex", justifyContent: 'space-evenly'}}>
                   <Button mensagem="Visualizar" act={() => router.push(`/campeonatos/${campeonatoDto.id}`)} />
                   <Button mensagem="Editar" act={() => setarCampeonatoPorIdParaAtualizacao(campeonatoDto.id)} />

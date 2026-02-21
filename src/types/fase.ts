@@ -4,14 +4,15 @@ export enum CriteriorEntradaEnum {
 }
 
 export type FaseDto = {
-    id: string
-    nome: string
-    situacao: string
-    criterioEntrada: CriterioEntradaEnum
-    quantidadeAtletas: number
-    quantidadeAtletasInscritos: number
-    ordem: number
-    quantidadeRodadas: number
+  id: string
+  nome: string
+  situacao: SituacaoFaseEnum
+  criterioEntrada: CriterioEntradaEnum
+  quantidadeAtletas: number
+  quantidadeAtletasInscritos: number
+  ordem: number
+  quantidadeRodadas: number
+  faseAnterior: FaseDto
 }
 
 export type FaseForm = {
@@ -19,7 +20,14 @@ export type FaseForm = {
   criterioEntrada: string | undefined
   quantidadeAtletas: number | undefined
   categoriaId: string | undefined
-  faseAnterior: string | undefined
+  faseAnteriorId: string | undefined
+}
+
+export enum SituacaoFaseEnum {
+  CRIADA = "Criada",
+  INICIADA = "Iniciada",
+  FINALIZADA = "Finalizada",
+  AGUARDANDO_DESEMPATE = "Aguardando Desempate"
 }
 
 export type RankingFaseDto = {
@@ -65,4 +73,11 @@ export function comparaCriteriosEntrada(e: CriterioEntradaEnum | undefined, e2: 
   if(e === undefined && e2 === undefined) return true
   
   return getDescricaoCriteriorEntradaEnum(e).toUpperCase() === getDescricaoCriteriorEntradaEnum(e2).toUpperCase()
+}
+
+
+export function getDescricaoSituacaoFaseEnum(e: SituacaoFaseEnum | undefined): string {
+  if(e == undefined) return "";
+  
+  return SituacaoFaseEnum[e.toString() as keyof typeof SituacaoFaseEnum]
 }

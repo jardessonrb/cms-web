@@ -14,6 +14,7 @@ import { Notify } from "@/lib/notify";
 import { ExceptionDefault, SelectOption } from "@/types/default";
 import { AsyncSelect } from "../../../atoms/AsyncSelect";
 import { CategoriaService } from "@/services/categoria-service";
+import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
 
 type ConteudoCompetidoresProps = {
     campeonatoId: string
@@ -194,7 +195,6 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
         }
     }
 
-
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -222,10 +222,9 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             </div>
             {atletas && atletas.length > 0 ? (
                 <DataTable>
-                    <DataTableHeader columns="1fr 1fr 2fr 1fr 1fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px", gap:"10px"}}>
-                        <div><strong>Número/Apelido</strong></div>
-                        <div><strong>Nome</strong></div>
-                        <div><strong>Responsável/Grupo</strong></div>
+                    <DataTableHeader columns="2fr 2fr 1fr 1fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px", gap:"10px"}}>
+                        <div><strong>Número/Apelido/Nome</strong></div>
+                        <div><strong>Grupo/Responsável</strong></div>
                         <div><strong>Graduação</strong></div>
                         <div><strong>Categoria</strong></div>
                         <div><strong>Situação</strong></div>
@@ -234,13 +233,24 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
         
                     <DataTableBody>
                         {atletas.map((atleta) => (
-                            <DataRow key={atleta.id} columns="1fr 1fr 2fr 1fr 1fr 1fr 1fr" style={{gap: "10px"}}>
-                                <DataCell>{atleta.numero} - {atleta.apelido}</DataCell>
-                                <DataCell>{atleta.nome}</DataCell>
-                                <DataCell>{atleta.responsavel} - {atleta.grupo}</DataCell>
+                            <DataRow key={atleta.id} columns="2fr 2fr 1fr 1fr 1fr 1fr" style={{gap: "10px"}}>
+                                <DataCell>
+                                    <div style={{display: "flex", justifyContent: "center", flexDirection: "column", gap: "10px"}}>
+                                        <span style={{fontWeight: "bold", textTransform: "uppercase"}}>{atleta.numero} - {atleta.apelido}</span>
+                                        <span>{atleta.nome}</span>
+                                    </div>
+                                </DataCell>
+                                <DataCell>
+                                    <div style={{display: "flex", justifyContent: "center", flexDirection: "column", gap: "10px"}}>
+                                        <span style={{fontWeight: "bold", textTransform: "uppercase"}}>{atleta.grupo}</span>
+                                        <span>{atleta.responsavel}</span>
+                                    </div>
+                                </DataCell>
                                 <DataCell>{atleta.graduacao}</DataCell>
                                 <DataCell>{atleta.categoriaId != null ? atleta.categoria : "Sem inscrição"}</DataCell>
-                                <DataCell>{getDescricaoSituacaoAtletaEnum(atleta.situacao)}</DataCell>
+                                <DataCell>
+                                    <SituacaoEstilizada children={getDescricaoSituacaoAtletaEnum(atleta.situacao)} funcType={situacao => Utils.definirCorConformeSituacaoAtleta(situacao)}/>
+                                </DataCell>
                                 <DataCell style={{display: "flex", justifyContent: 'center', flexDirection:"row", gap: "20px"}}>
                                     <Button mensagem="Editar" act={() => abrirModalAtualizacao(atleta.id)}/>
                                     <Button mensagem="Cancelar" act={() => cancelarAtleta(atleta.id)}

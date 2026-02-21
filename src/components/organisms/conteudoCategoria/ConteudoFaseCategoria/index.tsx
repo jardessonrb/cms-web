@@ -15,8 +15,9 @@ import { AsyncSelect } from "../../../atoms/AsyncSelect";
 import { CategoriaService } from "@/services/categoria-service";
 import { InscricaoAtletaCategoriaForm } from "@/types/inscricao-atleta-categoria";
 import { FaseService } from "@/services/fase-service";
-import { comparaCriteriosEntrada, CriterioEntradaEnum, CriteriorEntradaEnum, FaseDto, FaseForm, getDescricaoCriteriorEntradaEnum } from "@/types/fase";
+import { comparaCriteriosEntrada, CriterioEntradaEnum, CriteriorEntradaEnum, FaseDto, FaseForm, getDescricaoCriteriorEntradaEnum, getDescricaoSituacaoFaseEnum } from "@/types/fase";
 import { Select } from "@/components/atoms/Select";
+import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
 
 type ConteudoFaseCategoriaProps = {
     categoriaId: string
@@ -53,7 +54,7 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
         return {
             categoriaId: undefined,
             criterioEntrada: undefined,
-            faseAnterior: undefined,
+            faseAnteriorId: undefined,
             nome: undefined,
             quantidadeAtletas: undefined
         }
@@ -89,13 +90,13 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
             return;
         }
 
-        if(body.criterioEntrada === CRITERIO_ENTRADA_N_PRIMEIROS && (!body.faseAnterior || !body.quantidadeAtletas)){
+        if(body.criterioEntrada === CRITERIO_ENTRADA_N_PRIMEIROS && (!body.faseAnteriorId || !body.quantidadeAtletas)){
             return;
         }
 
         try{
-            if(body.criterioEntrada === CRITERIO_ENTRADA_N_PRIMEIROS && body.faseAnterior && body.quantidadeAtletas){
-                const validacao = await FaseService.validarCorteNovaFase(body.faseAnterior, body.quantidadeAtletas);
+            if(body.criterioEntrada === CRITERIO_ENTRADA_N_PRIMEIROS && body.faseAnteriorId && body.quantidadeAtletas){
+                const validacao = await FaseService.validarCorteNovaFase(body.faseAnteriorId, body.quantidadeAtletas);
     
                 if(validacao.quantidadeEmpatados > 0){
                     const confirmacao = confirm(`A fase anterior possui ${validacao.quantidadeEmpatados} competidores empatados. Deseja criar uma nova rodada de desempate na fase ${faseAnterior?.label} ?`)
@@ -141,7 +142,7 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
         }
 
         if(faseForm.criterioEntrada === CRITERIO_ENTRADA_N_PRIMEIROS){
-            if(faseForm.faseAnterior === undefined || faseForm.quantidadeAtletas == undefined || faseForm.nome === undefined){
+            if(faseForm.faseAnteriorId === undefined || faseForm.quantidadeAtletas == undefined || faseForm.nome === undefined){
                 Notify.error("Quando selecionado N primeiros, é necessário fornecer a quantidade e a fase anterior.")
                 return null;
             }
@@ -174,6 +175,23 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
             .finally(() => setLoading(false));
     }
 
+    function definirCorConformeSituacao(situacao: string) : SituacaoType {
+        if(situacao === "Iniciada" || situacao === "Criada"){
+          return "SUCCESS"
+        }
+    
+        if(situacao === "Finalizado"){
+          return "CONFIRM"
+        }
+
+        if(situacao === "Aguardando Desempate"){
+          return "ALERT"
+        }
+    
+        return "DANGER"
+      }
+    
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -183,7 +201,7 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
             <div style={styles.top}>
                 <div style={{width: "25%", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                     <Input 
-                        placeholder="Digite o nome ou apelido para buscar"
+                        placeholder="Digite o nome da fase para buscar"
                         style={{width: "80%"}}
                         value={termoBusca}
                         onChange={setTermoBusca}
@@ -196,23 +214,44 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
             </div>
             {fases && fases.length > 0 ? (
                 <DataTable>
-                    <DataTableHeader columns="2fr 2fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+                    <DataTableHeader columns="2fr 2fr 1fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
                         <div><strong>Fase</strong></div>
                         <div><strong>Critério de entrada</strong></div>
                         <div><strong>Situação</strong></div>
+                        <div><strong>Fase Anterior</strong></div>
                         <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
                     </DataTableHeader>
             
                     <DataTableBody>
                         {fases.map((fase) => (
-                            <DataRow key={fase.id} columns="2fr 2fr 1fr 1fr">
-                                <DataCell>{fase.nome}</DataCell>
-                                <DataCell>{getDescricaoCriteriorEntradaEnum(fase.criterioEntrada)}</DataCell>
-                                <DataCell>{fase.situacao}</DataCell>
+                            <DataRow key={fase.id} columns="2fr 2fr 1fr 1fr 1fr">
+                                <DataCell>
+                                    <div style={{display: "flex", justifyContent: "center", flexDirection: "column", gap: "10px"}}>
+                                        <span style={{fontWeight: "bold", textTransform: "uppercase"}}>{fase.nome}</span>
+                                        <span>Ordem: {fase.ordem}</span>
+                                    </div>
+                                </DataCell>
+                                <DataCell>
+                                    <SituacaoEstilizada children={getDescricaoCriteriorEntradaEnum(fase.criterioEntrada)} funcType={criterio => "CONFIRM"}/>
+                                </DataCell>
+                                <DataCell>
+                                    <SituacaoEstilizada children={getDescricaoSituacaoFaseEnum(fase.situacao)} funcType={situacao => definirCorConformeSituacao(situacao)}/>
+                                </DataCell>
+                                <DataCell>
+                                    {fase.faseAnterior ? (
+                                        <div style={{display: "flex", justifyContent: "center", flexDirection: "column", gap: "10px"}}>
+                                            <span style={{fontWeight: "bold", textTransform: "uppercase"}}>{fase.faseAnterior.nome}</span>
+                                            <span>Ordem: {fase.faseAnterior.ordem}</span>
+                                        </div>
+                                    ) : (
+                                        <span style={{fontWeight: "bold", textTransform: "uppercase"}}>Não possui fase anterior</span>
+                                    )}
+                                </DataCell>
                                 <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                                <button onClick={() => router.push(`/categorias/${categoriaId}/fases/${fase.id}`)}>
-                                    Visualizar
-                                </button>
+                                    <Button 
+                                        mensagem="Visualizar"
+                                        act={() => router.push(`/categorias/${categoriaId}/fases/${fase.id}`)}
+                                    />
                                 </DataCell>
                             </DataRow>
                         ))}

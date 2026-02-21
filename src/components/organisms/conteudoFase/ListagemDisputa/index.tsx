@@ -1,3 +1,5 @@
+import { Button } from "@/components/atoms/Button";
+import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
 import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "@/components/Table";
 import { Notify } from "@/lib/notify";
 import { DisputaService } from "@/services/disputa-service";
@@ -16,6 +18,18 @@ type ListagemDisputaProps = {
 type ExtracaoNomesDisputa = {
     texto1: string
     texto2: string
+}
+
+function definirCorConformeSituacao(situacao: string) : SituacaoType {
+    if(situacao === "Pendente"){
+        return "ALERT"
+    }
+
+    if(situacao === "Concluída"){
+        return "SUCCESS"
+    }
+
+    return "DANGER"
 }
 
 export function ListagemDisputa({ faseId, rodadaId, act }: ListagemDisputaProps){
@@ -74,11 +88,12 @@ export function ListagemDisputa({ faseId, rodadaId, act }: ListagemDisputaProps)
                                         <strong>{textos.texto2}</strong>
                                     </DataCell>
                                     <DataCell>{getDescricaoTipoDisputaEnum(disputa.tipoDisputa)}</DataCell>
-                                    <DataCell>{getDescricaoSituacaoDisputaEnum(disputa.situacao)}</DataCell>
+                                    <DataCell>
+                                        <SituacaoEstilizada children={getDescricaoSituacaoDisputaEnum(disputa.situacao)} funcType={situacao => definirCorConformeSituacao(situacao)}/>
+                                        
+                                    </DataCell>
                                     <DataCell style={{display: "flex", flexDirection: 'column', justifyContent: 'space-between'}}>
-                                        <button onClick={() => act(disputa.id)}>
-                                            Adicionar Notas
-                                        </button>
+                                        <Button mensagem={disputa.situacao.toUpperCase() === "CONCLUIDA" ? "Atualizar Notas" : "Adicionar Notas"} act={() => act(disputa.id)}/>
                                     </DataCell>
                                 </DataRow>
                             )
