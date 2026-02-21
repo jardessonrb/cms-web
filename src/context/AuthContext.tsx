@@ -19,6 +19,7 @@ export type AuthContextType = {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  loading: boolean;
   login: (data: { token: string; user: User }) => void;
   logout: () => void;
 };
@@ -34,6 +35,7 @@ export function AuthProvider({
 }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const isAuthenticated = !!token;
     // const isAuthenticated = true;
@@ -53,6 +55,8 @@ export function AuthProvider({
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
     }
+
+    setLoading(false);
 
     // setUser(mockUser);
   }, []);
@@ -79,6 +83,7 @@ export function AuthProvider({
         user,
         token,
         isAuthenticated,
+        loading,
         login,
         logout,
       }}

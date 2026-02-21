@@ -20,7 +20,7 @@ import { GeracaoRodadaForm, getDescricaoSituacaoRodadaEnum, getDescricaoTipoRoda
 import { RodadaService } from "@/services/rodada-service";
 import { ListagemDisputa } from "../ListagemDisputa";
 import { CardRegistroDeNotas } from "../CardRegistroDeNotas";
-import { AtletaNotasForm, DisputaDto, getDescricaoSituacaoDisputaEnum, NotaForm, RegistroDeNotasForm, SituacaoDisputaEnum, TipoDisputaEnum } from "@/types/disputa";
+import { AtletaNotasForm, DisputaDto, getDescricaoSituacaoDisputaEnum, getDescricaoTipoRegistroDisputaEnum, NotaForm, NotasDto, RegistroDeNotasForm, RegistroDisputaDto, SituacaoDisputaEnum, TipoDisputaEnum, TipoRegistroDisputaEnum } from "@/types/disputa";
 import { DisputaService } from "@/services/disputa-service";
 import { JuradoService } from "@/services/jurado-service";
 import { error } from "console";
@@ -108,9 +108,10 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
 
             setDisputaAtualParaRegistroNota(disputaOrdenada);
             setIsModalRegistroNotaOpen(true);
-
-            const notasDoRegistro = registrosOrdenados[0]?.notas;
-
+            
+            console.log(registrosOrdenados)
+            const notasDoRegistro = extrairNotas(registrosOrdenados);
+            console.log(notasDoRegistro)
             if (notasDoRegistro && notasDoRegistro.length === 3) {
                 const juradosParaSelect: SelectOption[] = notasDoRegistro.map(nota => ({
                     id: nota.juradoId,
@@ -131,6 +132,10 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
 
         }
 
+    }
+
+    function extrairNotas(registros: RegistroDisputaDto[]) : NotasDto[]{
+        return registros.filter(r => getDescricaoTipoRegistroDisputaEnum(r.tipoRegistro).toUpperCase() === "PONTUADO")[0].notas;
     }
 
     async function carregaDadosComFiltro(){

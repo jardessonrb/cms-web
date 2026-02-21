@@ -1,7 +1,8 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://192.168.200.103:8080",
+  baseURL: "http://192.168.200.103:8080", 
+  // baseURL: process.env.NEXT_PUBLIC_API_URL,
   timeout: 10000,
 });
 
