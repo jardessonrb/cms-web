@@ -5,6 +5,11 @@ export type CampeonatoDto = {
   criadoEm: string,
 }
 
+export type CampeonatoForm = {
+  campeonatoId?: string
+  nome: string | undefined
+}
+
 export type CampeonatoDetalhadoDto = CampeonatoDto & {
   quantidadeAtletas: number,
   quantidadeCategorias: number,
