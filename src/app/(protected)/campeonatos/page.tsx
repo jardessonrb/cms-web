@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CampeonatoService} from "../../../services/campeonato-service";
 // import { Table } from "../components/Table";
 import { useRouter } from "next/navigation";
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader } from "../../../components/Table";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "../../../components/Table";
 import { Button } from "../../../components/atoms/Button";
 import { Modal } from "../../../components/modecules/ModalBase";
 import { Input } from "../../../components/atoms/Input";
@@ -14,6 +14,8 @@ import { Notify } from "@/lib/notify";
 import { Utils } from "@/services/utils";
 import { ExceptionDefault } from "@/types/default";
 import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
+import { ButtonIcon } from "@/components/atoms/ButtonIcon";
+import { Spinner } from "@/components/atoms/Spinner";
 
 export default function CampeonatosPage() {
   const [campeonatos, setCampeonatos] = useState<CampeonatoDto[]>([]);
@@ -23,10 +25,8 @@ export default function CampeonatosPage() {
   const [paginaAtual, setPaginaAtual] = useState(0);
   const [totalDePaginas, setTotalDePaginas] = useState(2);
   const [campeonatoForm, setCampeonatoForm] = useState<CampeonatoForm>(limpaCampeonatoForm());
-
-  function mostraCampeonato(campeonatos: CampeonatoDto[]){
-    setCampeonatos(campeonatos)
-  }
+  const [isLoadingButton, setIsLoadingButton] = useState<boolean>(false);
+  const requestIdRef = useRef(0);
 
   async function criaCampeonato(){
     if(!campeonatoForm?.nome || campeonatoForm.nome.trim().length == 0){
@@ -52,21 +52,24 @@ export default function CampeonatosPage() {
 
     try{
 
+      setIsLoadingButton(true);
       const resultado = await CampeonatoService.atualizarCampeonato(campeonatoForm.campeonatoId, campeonatoForm);
       Notify.success("Campeonato atualizado com sucesso.");
       await carregaDados();
       setCampeonatoForm(limpaCampeonatoForm())
       setIsModalOpen(false);
 
-    }catch(error: any){
+    } catch(error: any){
         if(error.response){
             const exception = error.response.data as ExceptionDefault;
             Notify.error(exception.erros[0])
         }else{
             Notify.error("Erro desconhecido ao tentar atualizar campeonato")
         }
-
+    } finally {
+      setIsLoadingButton(false);
     }
+
 
   }
 
@@ -78,13 +81,27 @@ export default function CampeonatosPage() {
   }
 
   async function carregaDados(){
-     CampeonatoService.listar({page: paginaAtual, size: 10})
-      .then((page) => {
-        setPaginaAtual(page.number)
-        setTotalDePaginas(page.totalPages)
-        mostraCampeonato(page.content)
-      })
-      .finally(() => setLoading(false));
+    const requestId = ++requestIdRef.current;
+    setLoading(true);
+    try{
+      const paginaCampeonatos = await CampeonatoService.listar({page: paginaAtual, size: 10});
+      setTotalDePaginas(paginaCampeonatos.totalPages)
+      setCampeonatos(paginaCampeonatos.content)
+
+    } catch(error: any){
+        if(error.response){
+            const exception = error.response.data as ExceptionDefault;
+            Notify.error(exception.erros[0])
+        }else{
+            Notify.error("Erro desconhecido ao tentar listar competidores.")
+        }
+    }finally {
+        if (requestId === requestIdRef.current) {
+            setLoading(false);
+        }
+
+        setLoading(false)
+    }
   }
 
   function setarCampeonatoPorIdParaAtualizacao(campeonatoId: string){
@@ -116,45 +133,58 @@ export default function CampeonatosPage() {
     carregaDados();
   }, [paginaAtual]);
 
-  if (loading) return <p style={{ padding: 24 }}>Carregando...</p>;
-
   return (
     <main style={styles.main}>
       <div style={styles.top}>
         <h1>Campeonatos</h1>
         <Button mensagem="Criar Campeonato" act={() => setIsModalOpen(true)}/>
       </div>
-      <DataTable>
-        <DataTableHeader columns="3fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
-          <div><strong>Nome</strong></div>
-          <div><strong>Situação</strong></div>
-          <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
-        </DataTableHeader>
+      {campeonatos && campeonatos.length > 0 ? (
+        <DataTable>
+          <DataTableHeader columns="3fr 1fr 1fr" style={{marginTop: "10px", marginBottom: "20px"}}>
+            <div><strong>Nome</strong></div>
+            <div><strong>Situação</strong></div>
+            <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div>
+          </DataTableHeader>
 
-        <DataTableBody>
-          {campeonatos.map((campeonatoDto) => (
-            <DataRow key={campeonatoDto.id} columns="3fr 1fr 1fr">
-              <DataCell>{campeonatoDto.nome}</DataCell>
-              <DataCell>
-                <SituacaoEstilizada children={getDescricaoSituacaoCampeonatoEnum(campeonatoDto.situacao)} funcType={situacao => definirCorConformeSituacao(situacao)}/>
-                {/* {getDescricaoSituacaoCampeonatoEnum(campeonatoDto.situacao)} */}
-              </DataCell>
-              <DataCell style={{display: "flex", justifyContent: 'space-evenly'}}>
-                  <Button mensagem="Visualizar" act={() => router.push(`/campeonatos/${campeonatoDto.id}`)} />
-                  <Button mensagem="Editar" act={() => setarCampeonatoPorIdParaAtualizacao(campeonatoDto.id)} />
-              </DataCell>
-            </DataRow>
-          ))}
-        </DataTableBody>
-      </DataTable>
+          <DataTableBody>
+            {campeonatos.map((campeonatoDto) => (
+              <DataRow key={campeonatoDto.id} columns="3fr 1fr 1fr">
+                <DataCell>{campeonatoDto.nome}</DataCell>
+                <DataCell>
+                  <SituacaoEstilizada children={getDescricaoSituacaoCampeonatoEnum(campeonatoDto.situacao)} funcType={situacao => definirCorConformeSituacao(situacao)}/>
+                </DataCell>
+                <DataCell style={{display: "flex", justifyContent: 'space-evenly'}}>
+                    <ButtonIcon type="OPEN" mensagem="Visualizar" act={() => router.push(`/campeonatos/${campeonatoDto.id}`)} />
+                    <ButtonIcon type="UPDATE" mensagem="Atualizar" act={() => setarCampeonatoPorIdParaAtualizacao(campeonatoDto.id)}/>
+                </DataCell>
+              </DataRow>
+            ))}
+          </DataTableBody>
+        </DataTable>
+      ) : (
+         <DataTableMessageEmpty>
+          {campeonatos && campeonatos.length == 0 && !loading ? (
+            <span>Nenhum campeonato encontrado</span>
+          ) : (
+            <>
+              <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)"/>
+              <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+            </>
 
-      <div style={styles.footer}>
-        <Pagination
-          totalPages={totalDePaginas}
-          currentPage={paginaAtual}
-          onPageChange={setPaginaAtual}
-        />
-      </div>
+          )}
+          </DataTableMessageEmpty>
+      )}
+      
+      {campeonatos && campeonatos.length > 0 && 
+        <div style={styles.footer}>
+          <Pagination
+            totalPages={totalDePaginas}
+            currentPage={paginaAtual}
+            onPageChange={setPaginaAtual}
+          />
+        </div>
+      }
       <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title={campeonatoForm.campeonatoId ? "Atualizar Campeonato" : "Novo Campeonato"}>
         <Input
           placeholder="Nome do campeonato"
@@ -162,9 +192,9 @@ export default function CampeonatosPage() {
           onChange={valor => Utils.updateField(setCampeonatoForm, "nome", valor)}
         />
         {campeonatoForm.campeonatoId ? (
-          <Button mensagem="Atualizar campeonato" act={() => atualizarCampeonato()} />
+          <Button mensagem="Atualizar campeonato" isLoading={isLoadingButton} act={() => atualizarCampeonato()} />
         ) : (
-          <Button mensagem="Criar campeonato" act={() => criaCampeonato()} />
+          <Button mensagem="Criar campeonato" isLoading={isLoadingButton} act={() => criaCampeonato()} />
         )}
         
       </Modal>

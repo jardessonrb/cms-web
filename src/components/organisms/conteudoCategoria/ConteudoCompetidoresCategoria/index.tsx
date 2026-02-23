@@ -16,6 +16,7 @@ import { AsyncSelect } from "../../../atoms/AsyncSelect";
 import { CategoriaService } from "@/services/categoria-service";
 import { InscricaoAtletaCategoriaForm } from "@/types/inscricao-atleta-categoria";
 import { SituacaoEstilizada } from "@/components/atoms/SituacaoEstilizada";
+import { Spinner } from "@/components/atoms/Spinner";
 
 type ConteudoCompetidoresProps = {
     categoriaId: string
@@ -26,6 +27,8 @@ type ConteudoCompetidoresProps = {
 export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: ConteudoCompetidoresProps){
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [isLoadingBuscaAtletas, setIsLoadingBuscaAtletas] = useState(false);
+    const [isLoadingInscricaoAtleta, setIsLoadingInscricaoAtleta] = useState(false);
     const [atletas, setAtletas] = useState<AtletaListagemDto[]>([]);
     const [paginaAtual, setPaginaAtual] = useState(0);
     const [totalDePaginas, setTotalDePaginas] = useState(10);
@@ -33,10 +36,6 @@ export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: Con
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [inscricaoAtletaCategoria, setInscricaoAtletaCategoria] = useState(limpaAtletaForm() as InscricaoAtletaCategoriaForm);
     const [competidor, setCompetidor] = useState<SelectOption | null>(null);
-
-    function mostraAtletas(atletas: AtletaListagemDto[]){
-        setAtletas(atletas);
-    }
 
     function limpaAtletaForm(){
         return {
@@ -51,6 +50,7 @@ export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: Con
         }
 
         try {
+            setIsLoadingInscricaoAtleta(true);
             await CategoriaService.inscreverAtletaEmCategoria(categoriaId, competidor?.id);
             Notify.success("Competidor inscrito na categoria com sucesso.")
             setIsModalOpen(false);
@@ -63,28 +63,47 @@ export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: Con
             }else{
                 Notify.error("Erro desconhecido ao tentar inscrever o competidor no categoria")
             }
-
+        } finally {
+            setIsLoadingInscricaoAtleta(false);
         }
     }
 
     async function carregaDadosComFiltro(){
-        AtletaService.listaAtletasDaCategoria(categoriaId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)})
-            .then((page) => {
-                setPaginaAtual(page.number)
-                setTotalDePaginas(page.totalPages)
-                mostraAtletas(page.content)
-            })
-            .finally(() => setLoading(false));
+        try{
+            setIsLoadingBuscaAtletas(true);
+            const paginaAtletas = await AtletaService.listaAtletasDaCategoria(categoriaId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)});
+            setTotalDePaginas(paginaAtletas.totalPages)
+            setAtletas(paginaAtletas.content)
+
+        }catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar buscar competidores.")
+            }
+        }finally {
+            setIsLoadingBuscaAtletas(false)
+        }
     }
 
-    async function carregaDados(){
-        AtletaService.listaAtletasDaCategoria(categoriaId, {page: paginaAtual, size: 10})
-            .then((page) => {
-                setPaginaAtual(page.number)
-                setTotalDePaginas(page.totalPages)
-                mostraAtletas(page.content)
-            })
-            .finally(() => setLoading(false));
+    async function carregaDados(){    
+        try{
+            setLoading(true)
+            const paginaAtletas = await AtletaService.listaAtletasDaCategoria(categoriaId, {page: paginaAtual, size: 10});
+            setTotalDePaginas(paginaAtletas.totalPages)
+            setAtletas(paginaAtletas.content)
+
+        }catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar buscar competidores.")
+            }
+        }finally {
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
@@ -101,7 +120,7 @@ export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: Con
                         value={termoBusca}
                         onChange={setTermoBusca}
                     />
-                    <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
+                    <Button mensagem="buscar" isLoading={isLoadingBuscaAtletas} style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
                 </div>
                 <Button mensagem="Inscrever Competidor na Categoria" act={() => {
                     setIsModalOpen(true);
@@ -143,7 +162,19 @@ export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: Con
                         ))}
                     </DataTableBody>
                 </DataTable>
-            ) : (<DataTableMessageEmpty>Nenhum competidor encontrado</DataTableMessageEmpty>)}
+            ) : (
+                <DataTableMessageEmpty>
+                    {atletas && atletas.length == 0 && !loading ? (
+                    <span>Nenhum competidor encontrado</span>
+                    ) : (
+                    <>
+                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)"/>
+                        <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+                    </>
+        
+                    )}
+                </DataTableMessageEmpty>
+            )}
             
         
             <div style={styles.footer}>
@@ -168,7 +199,7 @@ export function ConteudoCompetidoresCategoria({ categoriaId, campeonatoId }: Con
                         }));
                     }}
                 />
-                <Button mensagem="Inscrever Atleta" act={inscreveAtletaEmCategoria} />
+                <Button mensagem="Inscrever Atleta" isLoading={isLoadingInscricaoAtleta} act={inscreveAtletaEmCategoria} />
             </Modal>
         
         </div> 

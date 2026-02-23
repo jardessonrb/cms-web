@@ -13,6 +13,8 @@ import { ExceptionDefault } from "@/types/default";
 import { CategoriaService } from "@/services/categoria-service";
 import { CategoriaDto, CategoriaForm, getDescricaoSituacaoCategoriaEnum } from "@/types/categoria";
 import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
+import { Spinner } from "@/components/atoms/Spinner";
+import { ButtonIcon } from "@/components/atoms/ButtonIcon";
 
 type ConteudoCategoriasProps = {
     campeonatoId: string
@@ -21,6 +23,8 @@ type ConteudoCategoriasProps = {
 export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [isLoadingCreateUpdateCategoria, setIsLoadingCreateUpdateCategoria] = useState(false);
+    const [isLoadingBuscaCategoria, setIsLoadingBuscaCategoria] = useState(false);
     const [categorias, setCategorias] = useState<CategoriaDto[]>([]);
     const [paginaAtual, setPaginaAtual] = useState(0);
     const [totalDePaginas, setTotalDePaginas] = useState(10);
@@ -30,13 +34,22 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
 
 
     async function carregaDadosComFiltro(){
-        CategoriaService.listaCategoriasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3  || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)})
-            .then((page) => {
-            setPaginaAtual(page.number)
-            setTotalDePaginas(page.totalPages)
-            setCategorias(page.content)
-            })
-        .finally(() => setLoading(false));
+        setIsLoadingBuscaCategoria(true);
+        try{
+            const paginaCategorias = await CategoriaService.listaCategoriasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3  || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)});
+            setTotalDePaginas(paginaCategorias.totalPages);
+            setCategorias(paginaCategorias.content);
+    
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar listar categorias.")
+            }
+        }finally {
+            setIsLoadingBuscaCategoria(false)
+        }
     }
 
     function iniciaCategoriaForm(){
@@ -50,6 +63,7 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
     async function cadastraCategoria(){
         try {
             
+            setIsLoadingCreateUpdateCategoria(true);
             const response = await CategoriaService.criaCategoria(categoriaForm);
             Notify.success("Categoria criada com sucesso.")
             setIsModalOpen(false);
@@ -62,7 +76,8 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
             }else{
                 Notify.error("Erro desconhecido ao tentar cadastrar categoria")
             }
-
+        } finally {
+            setIsLoadingCreateUpdateCategoria(false);
         }
     }
 
@@ -74,6 +89,7 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
                 return;
             }
             
+            setIsLoadingCreateUpdateCategoria(true);
             const response = await CategoriaService.atualizarCategoria(categoriaForm.categoriaId , categoriaForm);
             Notify.success("Categoria atualizada com sucesso.")
             setIsModalOpen(false);
@@ -86,19 +102,29 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
             }else{
                 Notify.error("Erro desconhecido ao tentar cadastrar categoria")
             }
-
+        } finally {
+            setIsLoadingCreateUpdateCategoria(false);
         }
     }
 
 
     async function carregaDados(){
-        CategoriaService.listaCategoriasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10})
-        .then((page) => {
-        setPaginaAtual(page.number)
-        setTotalDePaginas(page.totalPages)
-        setCategorias(page.content)
-        })
-        .finally(() => setLoading(false));
+        setLoading(true);
+        try{
+            const paginaCategorias = await CategoriaService.listaCategoriasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10});
+            setTotalDePaginas(paginaCategorias.totalPages);
+            setCategorias(paginaCategorias.content);
+    
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar listar categorias.")
+            }
+        }finally {
+            setLoading(false)
+        }
     }
 
     function setarCategoriaPorId(categoriaId: string){
@@ -141,7 +167,7 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
                         value={termoBusca}
                         onChange={setTermoBusca}
                     />
-                    <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
+                    <Button mensagem="buscar" isLoading={isLoadingBuscaCategoria} style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
                 </div>
                 <Button mensagem="Criar nova categoria" act={() => {
                     setIsModalOpen(true);
@@ -165,15 +191,27 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
                                 <SituacaoEstilizada children={getDescricaoSituacaoCategoriaEnum(categoria.situacao)} funcType={situacao => definirCorConformeSituacao(situacao)} />
                             </DataCell>
                             <DataCell style={{display: "flex", justifyContent: 'space-evenly'}}>
-                                <Button mensagem="Visualizar" act={() => router.push(`/categorias/${categoria.id}`)} />
-                                <Button mensagem="Editar" act={() => setarCategoriaPorId(categoria.id)} />
+                                <ButtonIcon mensagem="Visualizar" type="OPEN" act={() => router.push(`/categorias/${categoria.id}`)} />
+                                <ButtonIcon mensagem="Editar" type="UPDATE" act={() => setarCategoriaPorId(categoria.id)} />
                             </DataCell>
                         </DataRow>
                     ))}
                 </DataTableBody>
             </DataTable>
             ) : 
-            (<DataTableMessageEmpty>Nenhuma categoria encontrada</DataTableMessageEmpty>)}
+            (
+                <DataTableMessageEmpty>
+                    {categorias && categorias.length == 0 && !loading ? (
+                        <span>Nenhuma categoria encontrado</span>
+                    ) : (
+                    <>
+                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)"/>
+                        <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+                    </>
+
+                    )}
+                </DataTableMessageEmpty>
+            )}
         
             <div style={styles.footer}>
                 {categorias && categorias.length > 0 && 
@@ -191,8 +229,8 @@ export function ConteudoCategorias({ campeonatoId }: ConteudoCategoriasProps){
                     onChange={v => Utils.updateField(setCategoriaForm, "nome", v)}
                 />
                 {categoriaForm.categoriaId ? 
-                    (<Button mensagem="Atualizar categoria" act={() => atualizarCategoria()}/> ) : 
-                    (<Button mensagem="Cadastrar Categoria" act={() => cadastraCategoria()} />)
+                    (<Button mensagem="Atualizar categoria" isLoading={isLoadingCreateUpdateCategoria} act={() => atualizarCategoria()}/> ) : 
+                    (<Button mensagem="Cadastrar Categoria" isLoading={isLoadingCreateUpdateCategoria} act={() => cadastraCategoria()} />)
                 }
                 
             </Modal>

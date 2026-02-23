@@ -1,3 +1,4 @@
+import { Notify } from "@/lib/notify";
 import axios from "axios";
 
 export const api = axios.create({
@@ -15,3 +16,29 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    const mensagemDeErro = error.response.data.mensagem;
+
+    if (status === 401 || status === 403) {
+      Notify.error(mensagemDeErro || "Sessão expirada. Faça login novamente.");
+
+      localStorage.removeItem("@cms_token");
+      localStorage.removeItem("@cms_user");
+
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 2000);
+    }
+
+    if (!error.response) {
+      Notify.error("Erro de conexão com o servidor.");
+    }
+
+    return Promise.reject(error);
+  }
+);

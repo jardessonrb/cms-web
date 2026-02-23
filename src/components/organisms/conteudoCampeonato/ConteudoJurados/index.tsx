@@ -13,6 +13,8 @@ import { ExceptionDefault } from "@/types/default";
 import { JuradoDto, JuradoForm } from "@/types/jurado";
 import { JuradoService } from "@/services/jurado-service";
 import { Page } from "@/types/page";
+import { Spinner } from "@/components/atoms/Spinner";
+import { ButtonIcon } from "@/components/atoms/ButtonIcon";
 
 type ConteudoJuradosProps = {
     campeonatoId: string
@@ -24,8 +26,9 @@ export type SelectOption = {
 };
 
 export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
-    const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [isLoadingBuscaJurados, setIsLoadingBuscaJurados] = useState(false);
+    const [isLoadingCadastroUpdate, setIsLoadingCadastroUpdate] = useState(false);
     const [jurados, setJurados] = useState<JuradoDto[]>([]);
     const [paginaAtual, setPaginaAtual] = useState(0);
     const [totalDePaginas, setTotalDePaginas] = useState(10);
@@ -35,7 +38,8 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
 
 
     async function carregaDadosComFiltro(){
-         try {
+        setIsLoadingBuscaJurados(true);
+        try {
             const juradoResponse: Page<JuradoDto> = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)})
             setPaginaAtual(juradoResponse.number)
             setTotalDePaginas(juradoResponse.totalPages)
@@ -48,6 +52,8 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
             }else{
                 Notify.error("Erro desconhecido ao listar jurados do campeonato.")
             }
+        }finally{
+            setIsLoadingBuscaJurados(false);
         }
     }
 
@@ -63,6 +69,7 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
 
     async function cadastraJurado(){
         try {
+            setIsLoadingCadastroUpdate(true);
             const response: JuradoDto = await JuradoService.criaJurado(juradoForm);
             Notify.success("Jurado criado com sucesso.")
             setIsModalOpen(false);
@@ -75,17 +82,27 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
             }else{
                 Notify.error("Erro desconhecido ao tentar cadastrar jurado")
             }
+        }finally{
+            setIsLoadingCadastroUpdate(false);
         }
     }
 
     async function carregaDados(){
-        JuradoService.listaJuradosDoCampeonato(campeonatoId, {page: paginaAtual, size: 10})
-        .then((page) => {
-            setPaginaAtual(page.number)
-            setTotalDePaginas(page.totalPages)
-            setJurados(page.content)
-        })
-        .finally(() => setLoading(false));
+        setLoading(true);
+        try{
+            const paginaJurados = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {page: paginaAtual, size: 10});
+            setTotalDePaginas(paginaJurados.totalPages)
+            setJurados(paginaJurados.content)
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar listar jurados.")
+            }
+        }finally {
+            setLoading(false)
+        }
     }
 
     function abrirModalAtualizacao(juradoId: string){
@@ -110,6 +127,7 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
                 return;
             }
 
+            setIsLoadingCadastroUpdate(true);
             const response: JuradoDto = await JuradoService.atualizarJurado(juradoForm.juradoId, juradoForm);
             Notify.success("Jurado atualizado com sucesso.")
             setIsModalOpen(false);
@@ -122,6 +140,8 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
             }else{
                 Notify.error("Erro desconhecido ao tentar atualizar o jurado")
             }
+        } finally{
+            setIsLoadingCadastroUpdate(false);
         }
     }
 
@@ -139,7 +159,7 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
                         value={termoBusca}
                         onChange={setTermoBusca}
                     />
-                    <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
+                    <Button mensagem="buscar" isLoading={isLoadingBuscaJurados} style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
                 </div>
                 <Button mensagem="Cadastrar novo jurado" act={() => {
                     setIsModalOpen(true);
@@ -161,13 +181,25 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
                                 <DataCell>{jurado.apelido}</DataCell>
                                 <DataCell>{jurado.grupo}</DataCell>
                                 <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                                    <Button mensagem="Editar" act={() => abrirModalAtualizacao(jurado.id)}/>
+                                    <ButtonIcon mensagem="Editar" type="UPDATE" act={() => abrirModalAtualizacao(jurado.id)}/>
                                 </DataCell>
                             </DataRow>
                         ))}
                     </DataTableBody>
                 </DataTable>
-            ) : (<DataTableMessageEmpty>Nenhum jurado encontrado</DataTableMessageEmpty>)}
+            ) : (
+                <DataTableMessageEmpty>
+                    {jurados && jurados.length == 0 && !loading ? (
+                    <span>Nenhum jurado encontrado</span>
+                    ) : (
+                    <>
+                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)"/>
+                        <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+                    </>
+
+                    )}
+                </DataTableMessageEmpty>
+            )}
         
             <div style={styles.footer}>
                 {jurados && jurados.length > 0 && 
@@ -194,7 +226,10 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
                     value={juradoForm.grupo}
                     onChange={v => Utils.updateField(setJuradoForm, "grupo", v)}
                 />
-                {juradoForm.juradoId ? (<Button mensagem="Atualizar jurado" act={() => atualizarJurado()} />) : (<Button mensagem="Cadastrar jurado" act={() => cadastraJurado()} />)}
+                {juradoForm.juradoId ? (
+                    <Button mensagem="Atualizar jurado" isLoading={isLoadingCadastroUpdate} act={() => atualizarJurado()} />) : (
+                    <Button mensagem="Cadastrar jurado" isLoading={isLoadingCadastroUpdate} act={() => cadastraJurado()} />
+                )}
                 
             </Modal>
         

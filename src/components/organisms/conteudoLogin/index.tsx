@@ -26,6 +26,7 @@ export function ConteudoLogin(){
     const [loginForm, setLoginForm] = useState<LoginForm>({email: undefined, senha: undefined} as LoginForm);
     const { login } = useAuth();
     const route = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
 
     async function logar(){
         if(!loginForm.senha || !loginForm.email){
@@ -34,8 +35,8 @@ export function ConteudoLogin(){
         }
 
         try{
+            setIsLoading(true);
             const resposta = await LoginService.login(loginForm);
-            console.log(resposta)
             login({
                 token: resposta.token,
                 user: {
@@ -57,7 +58,8 @@ export function ConteudoLogin(){
             }else{
                 Notify.error("Erro desconhecido ao tentar logar no sistema")
             }
-
+        } finally{
+            setIsLoading(false);
         }
     }   
 
@@ -88,7 +90,7 @@ export function ConteudoLogin(){
                     </div>
                 </div>
                 <div style={styles.containerFooter}>
-                    <Button mensagem="Logar" act={logar} />
+                    <Button mensagem="Logar" isLoading={isLoading} act={logar} />
                 </div>
             </div>
         </div>

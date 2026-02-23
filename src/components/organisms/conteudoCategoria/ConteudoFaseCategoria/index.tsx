@@ -18,6 +18,8 @@ import { FaseService } from "@/services/fase-service";
 import { comparaCriteriosEntrada, CriterioEntradaEnum, CriteriorEntradaEnum, FaseDto, FaseForm, getDescricaoCriteriorEntradaEnum, getDescricaoSituacaoFaseEnum } from "@/types/fase";
 import { Select } from "@/components/atoms/Select";
 import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
+import { Spinner } from "@/components/atoms/Spinner";
+import { ButtonIcon } from "@/components/atoms/ButtonIcon";
 
 type ConteudoFaseCategoriaProps = {
     categoriaId: string
@@ -28,6 +30,8 @@ type ConteudoFaseCategoriaProps = {
 export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFaseCategoriaProps){
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [isLoadingBuscaFases, setIsLoadingBuscaFases] = useState(false);
+    const [isLoadingCreateUpdate, setIsLoadingCreateUpdate] = useState(false);
     const [fases, setFases] = useState<FaseDto[]>([]);
     const [paginaAtual, setPaginaAtual] = useState(0);
     const [totalDePaginas, setTotalDePaginas] = useState(10);
@@ -96,6 +100,7 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
 
         try{
             if(body.criterioEntrada === CRITERIO_ENTRADA_N_PRIMEIROS && body.faseAnteriorId && body.quantidadeAtletas){
+                setIsLoadingCreateUpdate(true);
                 const validacao = await FaseService.validarCorteNovaFase(body.faseAnteriorId, body.quantidadeAtletas);
     
                 if(validacao.quantidadeEmpatados > 0){
@@ -115,9 +120,12 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                 Notify.error(`Erro desconhecido ao tentar validar a criação da nova fase ${body.nome}.`)
             }
 
+        } finally {
+            setIsLoadingCreateUpdate(false);
         }
 
         try {
+            setIsLoadingCreateUpdate(true);
             const response = await FaseService.criarFase(body);
             Notify.success(`Fase ${response.nome} criada com sucesso.`)
             setIsModalOpen(false);
@@ -131,6 +139,8 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                 Notify.error(`Erro desconhecido ao tentar criar fase ${body.nome}.`)
             }
 
+        }finally{
+            setIsLoadingCreateUpdate(false);
         }
 
     }
@@ -156,23 +166,40 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
     }
 
     async function carregaDadosComFiltro(){
-        FaseService.listaFasesPorCategoriaId(categoriaId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)})
-            .then((page) => {
-                setPaginaAtual(page.number)
-                setTotalDePaginas(page.totalPages)
-                mostraFases(page.content)
-            })
-            .finally(() => setLoading(false));
+        try{
+            setIsLoadingBuscaFases(true);
+            const paginasFases = await FaseService.listaFasesPorCategoriaId(categoriaId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3 || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)})
+            setTotalDePaginas(paginasFases.totalPages)
+            mostraFases(paginasFases.content)
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar listar fases da categoria")
+            }
+        } finally {
+            setIsLoadingBuscaFases(false);
+        }
+        
     }
 
     async function carregaDados(){
-        FaseService.listaFasesPorCategoriaId(categoriaId, {page: paginaAtual, size: 10})
-            .then((page) => {
-                setPaginaAtual(page.number)
-                setTotalDePaginas(page.totalPages)
-                mostraFases(page.content)
-            })
-            .finally(() => setLoading(false));
+        try{
+            setLoading(true);
+            const paginasFases = await FaseService.listaFasesPorCategoriaId(categoriaId, {page: paginaAtual, size: 10});
+            setTotalDePaginas(paginasFases.totalPages)
+            setFases(paginasFases.content)
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar listar fases da categoria")
+            }
+        } finally {
+            setLoading(false);
+        }
     }
 
     function definirCorConformeSituacao(situacao: string) : SituacaoType {
@@ -206,7 +233,7 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                         value={termoBusca}
                         onChange={setTermoBusca}
                     />
-                    <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
+                    <Button mensagem="buscar" isLoading={isLoadingBuscaFases} style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
                 </div>
                 <Button mensagem="Criar nova fase" act={() => {
                     setIsModalOpen(true);
@@ -248,8 +275,9 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                                     )}
                                 </DataCell>
                                 <DataCell style={{display: "flex", justifyContent: 'center'}}>
-                                    <Button 
+                                    <ButtonIcon 
                                         mensagem="Visualizar"
+                                        type="OPEN"
                                         act={() => router.push(`/categorias/${categoriaId}/fases/${fase.id}`)}
                                     />
                                 </DataCell>
@@ -258,7 +286,19 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                     </DataTableBody>
                 </DataTable>
 
-            ) : (<DataTableMessageEmpty>Nenhuma fase criada</DataTableMessageEmpty>)}
+            ) : (
+                 <DataTableMessageEmpty>
+                    {fases && fases.length == 0 && !loading ? (
+                        <span>Nenhuma fase encontrado</span>
+                    ) : (
+                    <>
+                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)"/>
+                        <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+                    </>
+        
+                    )}
+                </DataTableMessageEmpty>
+            )}
         
             <div style={styles.footer}>
                 {fases && fases.length > 0 && 
@@ -299,7 +339,7 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                         <AsyncSelect
                             placeholder="Escolha a categoria anterior"
                             value={faseAnterior}
-                            onSelect={option => {setFaseAnterior(option), setFaseForm(prev => {return {...prev, faseAnterior: option.id}})}}
+                            onSelect={option => {setFaseAnterior(option), setFaseForm(prev => {return {...prev, faseAnteriorId: option.id}})}}
                             fetchOptions={async (query) => {
                                 const page = await FaseService.listaFasesPorCategoriaId(categoriaId, {page: 0, size: 5, sort: ["ordem, desc"], filtro: (query && query.length >= 3 ? query : undefined)});
                                 return page.content.map((fase) => ({

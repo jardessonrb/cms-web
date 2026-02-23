@@ -35,7 +35,6 @@ export function Pagination({
       >
         {"<<"}
       </button>
-
       {pages.map((page) => (
         <button
           key={page}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "../../../atoms/Input";
 import { Modal } from "../../../modecules/ModalBase";
 import { Pagination } from "../../../modecules/Pagination";
@@ -15,6 +15,8 @@ import { ExceptionDefault, SelectOption } from "@/types/default";
 import { AsyncSelect } from "../../../atoms/AsyncSelect";
 import { CategoriaService } from "@/services/categoria-service";
 import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
+import { Spinner } from "@/components/atoms/Spinner";
+import { ButtonIcon } from "@/components/atoms/ButtonIcon";
 
 type ConteudoCompetidoresProps = {
     campeonatoId: string
@@ -22,6 +24,8 @@ type ConteudoCompetidoresProps = {
 
 export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps){
     const router = useRouter();
+    const [isLoadingBuscaCompetidores, setIsLoadingBuscaCompetidores] = useState(false);
+    const [isLoadingImportAtletas, setIsLoadingImportAtletas] = useState(false);
     const [loading, setLoading] = useState(true);
     const [atletas, setAtletas] = useState<AtletaListagemDto[]>([]);
     const [paginaAtual, setPaginaAtual] = useState(0);
@@ -32,6 +36,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     const [categoria, setCategoria] = useState<SelectOption | null>(null);
     const [isModalImportacaoOpen, setIsModalImportacaoOpen] = useState<boolean>(false);
     const [arquivoSelecionado, setArquivoSelecionado] = useState<File | null>(null);
+    const requestIdRef = useRef(0);
 
     function mostraAtletas(atletas: AtletaListagemDto[]){
         setAtletas(atletas);
@@ -73,24 +78,51 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     }
 
     async function carregaDadosComFiltro(){
-        AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3  || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)})
-            .then((page) => {
-            setPaginaAtual(page.number)
-            setTotalDePaginas(page.totalPages)
-            mostraAtletas(page.content)
-            })
-        .finally(() => setLoading(false));
+        const requestId = ++requestIdRef.current;
+        setIsLoadingBuscaCompetidores(true);
+        try{
+            if (requestId !== requestIdRef.current) return;
+
+            const paginaAtletas = await AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3  || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)});
+            setTotalDePaginas(paginaAtletas.totalPages);
+            setAtletas(paginaAtletas.content);
+        }catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar listar competidores.")
+            }
+        }finally {
+            if (requestId === requestIdRef.current) {
+                setIsLoadingBuscaCompetidores(false);
+            }
+        }
     }
 
     async function carregaDados(){
         if(!termoBusca || termoBusca?.length == 0){
-            AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10})
-            .then((page) => {
-            setPaginaAtual(page.number)
-            setTotalDePaginas(page.totalPages)
-            mostraAtletas(page.content)
-            })
-            .finally(() => setLoading(false));
+            const requestId = ++requestIdRef.current;
+            setLoading(true);
+
+            try{
+                if (requestId !== requestIdRef.current) return;
+    
+                const paginaAtletas = await AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10});
+                setTotalDePaginas(paginaAtletas.totalPages);
+                mostraAtletas(paginaAtletas.content);
+            }catch(error: any){
+                if(error.response){
+                    const exception = error.response.data as ExceptionDefault;
+                    Notify.error(exception.erros[0])
+                }else{
+                    Notify.error("Erro desconhecido ao tentar listar competidores.")
+                }
+            }finally {
+                if (requestId === requestIdRef.current) {
+                    setLoading(false);
+                }
+            }
         }
     }
 
@@ -161,15 +193,27 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             Notify.info("Selecione um arquivo antes de importar.");
             return;
         }
+        setIsLoadingImportAtletas(true);
+        try{
+            const resposta = await AtletaService.importarCSV(campeonatoId, arquivoSelecionado);
+            Notify.success(`Arquivo processado com sucesso. ${resposta.registrosEnviados} registros enviados, ${resposta.quantidadeDeAtletasCriados} competidores criados e ${resposta.quantidadeCategoriasCriadas} categorias criadas`, {duration: 3000})
+            setTimeout(() => {
+                setIsModalImportacaoOpen(false);
+                setArquivoSelecionado(null);
+                setIsLoadingImportAtletas(false);
+                window.location.reload();
+            }, 3000);
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar importar competidores do campeonato")
+            }
+        } finally {
+            setIsLoadingImportAtletas(false);
+        }
 
-        const resposta = await AtletaService.importarCSV(campeonatoId, arquivoSelecionado);
-        Notify.success(`Arquivo processado com sucesso. ${resposta.registrosEnviados} registros enviados, ${resposta.quantidadeDeAtletasCriados} competidores criados e ${resposta.quantidadeCategoriasCriadas} categorias criadas`, {duration: 3000})
-        setTimeout(() => {
-            setIsModalImportacaoOpen(false);
-            setArquivoSelecionado(null);
-            // router.refresh();
-            window.location.reload();
-        }, 3000);
     }
 
     async function cancelarAtleta(atletaId: string){
@@ -209,10 +253,10 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                         value={termoBusca}
                         onChange={setTermoBusca}
                     />
-                    <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
+                    <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} isLoading={isLoadingBuscaCompetidores} act={() => carregaDadosComFiltro()}/>
                 </div>
                 <div style={{display: "flex", justifyContent: "space-evenly", gap: "20px"}}>
-                    <Button mensagem="Importação de Competidores" act={() => {
+                    <ButtonIcon mensagem="Importação de Competidores" type="IMPORT" act={() => {
                         setIsModalImportacaoOpen(true);
                     }}/>
                     <Button mensagem="Cadastrar Novo Competidor" act={() => {
@@ -252,7 +296,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                                     <SituacaoEstilizada children={getDescricaoSituacaoAtletaEnum(atleta.situacao)} funcType={situacao => Utils.definirCorConformeSituacaoAtleta(situacao)}/>
                                 </DataCell>
                                 <DataCell style={{display: "flex", justifyContent: 'center', flexDirection:"row", gap: "20px"}}>
-                                    <Button mensagem="Editar" act={() => abrirModalAtualizacao(atleta.id)}/>
+                                    <ButtonIcon mensagem="Editar" act={() => abrirModalAtualizacao(atleta.id)} type="UPDATE"/>
                                     <Button mensagem="Cancelar" act={() => cancelarAtleta(atleta.id)}
                                         style={{backgroundColor: "var(--color-error)"}}
                                     />
@@ -261,7 +305,19 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                         ))}
                     </DataTableBody>
                 </DataTable>
-            ) : (<DataTableMessageEmpty>Nenhum competidor encontrado</DataTableMessageEmpty>)}
+            ) : (
+                <DataTableMessageEmpty>
+                 {atletas && atletas.length == 0 && !loading ? (
+                    <span>Nenhum competidor encontrado</span>
+                ) : (
+                    <>
+                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)"/>
+                        <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+                    </>
+
+                )}
+                </DataTableMessageEmpty>
+            )}
             
         
             <div style={styles.footer}>
@@ -357,7 +413,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                         </span>
                     )}
 
-                    <Button act={handleImportar} isDisable={!arquivoSelecionado} style={{opacity: !arquivoSelecionado ? "0.5" : undefined}} mensagem="Importar"/>
+                    <Button act={handleImportar} isLoading={isLoadingImportAtletas} isDisable={!arquivoSelecionado} style={{opacity: !arquivoSelecionado ? "0.5" : undefined}} mensagem="Importar"/>
                 </div>
             </Modal>        
         </div> 

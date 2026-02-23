@@ -1,5 +1,7 @@
 import { Button } from "@/components/atoms/Button";
+import { ButtonIcon } from "@/components/atoms/ButtonIcon";
 import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
+import { Spinner } from "@/components/atoms/Spinner";
 import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "@/components/Table";
 import { Notify } from "@/lib/notify";
 import { DisputaService } from "@/services/disputa-service";
@@ -34,6 +36,8 @@ function definirCorConformeSituacao(situacao: string) : SituacaoType {
 
 export function ListagemDisputa({ faseId, rodadaId, act }: ListagemDisputaProps){
     const [disputas, setDispustas] = useState<DisputaDto[]>([])
+    const [loading, setLoading] = useState(true);
+    const DISPUTA_CONCLUIDA = "CONCLUIDA";
 
     function extraiNomeDisputa(disputa: DisputaDto): ExtracaoNomesDisputa {
         let registroDisputa1: RegistroDisputaDto = disputa.registrosDisputa[0]
@@ -93,14 +97,31 @@ export function ListagemDisputa({ faseId, rodadaId, act }: ListagemDisputaProps)
                                         
                                     </DataCell>
                                     <DataCell style={{display: "flex", flexDirection: 'column', justifyContent: 'space-between'}}>
-                                        <Button mensagem={disputa.situacao.toUpperCase() === "CONCLUIDA" ? "Atualizar Notas" : "Adicionar Notas"} act={() => act(disputa.id)}/>
+                                        {disputa.situacao.toUpperCase() === DISPUTA_CONCLUIDA ? (
+                                            <ButtonIcon mensagem="Atualizar notas" type="UPDATE" act={() => act(disputa.id)}/>
+                                        ) : (
+                                            <ButtonIcon mensagem="Registrar notas" type="REGISTER" act={() => act(disputa.id)}/>
+                                        )}
+                                        {/* <Button mensagem={disputa.situacao.toUpperCase() === "CONCLUIDA" ? "Atualizar Notas" : "Adicionar Notas"} act={() => act(disputa.id)}/> */}
                                     </DataCell>
                                 </DataRow>
                             )
                         })}
                     </DataTableBody>
                 </DataTable>
-            ) : (<DataTableMessageEmpty>Nenhuma disputa encontrada para a rodada</DataTableMessageEmpty>)}
+            ) : (
+                <DataTableMessageEmpty>
+                    {disputas && disputas.length == 0 && !loading ? (
+                    <span>Nenhuma disputa encontrada para a rodada</span>
+                    ) : (
+                    <>
+                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)"/>
+                        <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+                    </>
+        
+                    )}
+                </DataTableMessageEmpty>
+            )}
 
             
         </div>

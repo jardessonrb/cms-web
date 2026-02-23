@@ -15,6 +15,8 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    gap: "10px",
+    minHeight: "200px"
     // height: "40px"
   }
 };
