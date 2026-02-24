@@ -44,14 +44,36 @@ export default function RootLayout({
             position="top-center"
             toastOptions={{
               style: {
-                background: "var(--color-bg-light)",
-                color: "var(--color-text)",
-                border: "1px solid #e5e7eb",
-                height: "100px",
-                width: '30%'
+                height: "80px",
+                width: "30%",
+                fontWeight: "500",
               },
+
+              success: {
+                style: {
+                  background: "var(--color-success)", // verde
+                  color: "var(--color-bg-light)",
+                  fontWeight: "bold"
+                },
+                iconTheme: {
+                  primary: "var(--color-bg-light)",
+                  secondary: "var(--color-success)",
+                },
+              },
+
+              error: {
+                style: {
+                  background: "var(--color-error)", // vermelho
+                  color: "var(--color-bg-light)",
+                  fontWeight: "bold"
+                },
+                iconTheme: {
+                  primary: "var(--color-bg-light)",
+                  secondary: "var(--color-error)",
+                },
+              }
             }}
-            />
+          />
         </AuthProvider>
       </body>
     </html>

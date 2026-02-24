@@ -25,6 +25,8 @@ type ConteudoCompetidoresProps = {
 export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps){
     const router = useRouter();
     const [isLoadingBuscaCompetidores, setIsLoadingBuscaCompetidores] = useState(false);
+    const [isLoadingCreateUpdateCompetidor, setIsLoadingCreateUpdateCompetidor] = useState(false);
+    const [competidorParaCancelamentoId, setCompetidorParaCancelamentoId] = useState<string | undefined>();
     const [isLoadingImportAtletas, setIsLoadingImportAtletas] = useState(false);
     const [loading, setLoading] = useState(true);
     const [atletas, setAtletas] = useState<AtletaListagemDto[]>([]);
@@ -60,6 +62,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
 
     async function cadastraAtleta(){
         try {
+            setIsLoadingCreateUpdateCompetidor(true);
             const atletaComCategoria = {...atletaForm, categoriaId: categoria?.id}
             const response = await AtletaService.criar(atletaComCategoria);
             Notify.success("Competidor salvo com sucesso.")
@@ -74,6 +77,8 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             }
 
             Notify.error("Erro desconhecido ao tentar cadastrar o competidor")
+        } finally{
+            setIsLoadingCreateUpdateCompetidor(false);
         }
     }
 
@@ -157,7 +162,8 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                 Notify.error("É necessário informar o id para atualizar o competidor");
                 return;
             }
-
+            
+            setIsLoadingCreateUpdateCompetidor(true);
             const atletaComCategoria = {...atletaForm, categoriaId: categoria?.id}
             const response = await AtletaService.atualizar(atletaForm.atletaId, atletaComCategoria);
             Notify.success("Competidor atualizado com sucesso.")
@@ -172,6 +178,8 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             }
 
             Notify.error("Erro desconhecido ao tentar atualizar o competidor")
+        } finally{
+            setIsLoadingCreateUpdateCompetidor(false);
         }
     }
 
@@ -225,6 +233,8 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                 return;
             }
 
+            setIsLoadingCreateUpdateCompetidor(true);
+            setCompetidorParaCancelamentoId(atletaId);
             const response = await AtletaService.cancelarAtleta(atletaId);
             Notify.success("Competidor cancelado com sucesso.")
             setTermoBusca(undefined)
@@ -236,6 +246,9 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             }
 
             Notify.error("Erro desconhecido ao tentar cancelar o competidor")
+        } finally {
+            setIsLoadingCreateUpdateCompetidor(false);
+            setCompetidorParaCancelamentoId(undefined);
         }
     }
 
@@ -297,7 +310,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                                 </DataCell>
                                 <DataCell style={{display: "flex", justifyContent: 'center', flexDirection:"row", gap: "20px"}}>
                                     <ButtonIcon mensagem="Editar" act={() => abrirModalAtualizacao(atleta.id)} type="UPDATE"/>
-                                    <Button mensagem="Cancelar" act={() => cancelarAtleta(atleta.id)}
+                                    <Button mensagem="Cancelar" isLoading={(isLoadingCreateUpdateCompetidor && competidorParaCancelamentoId === atleta.id) ? true : false} act={() => cancelarAtleta(atleta.id)}
                                         style={{backgroundColor: "var(--color-error)"}}
                                     />
                                 </DataCell>
@@ -384,7 +397,9 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                         }));
                     }}
                 />
-                {atletaForm.atletaId ? (<Button mensagem="Atualizar Competidor" act={() => atualizaCompetidor()} />) : (<Button mensagem="Cadastrar Competidor" act={() => cadastraAtleta()} />)}
+                {atletaForm.atletaId ? (
+                    <Button mensagem="Atualizar Competidor" isLoading={isLoadingCreateUpdateCompetidor} act={() => atualizaCompetidor()} />) : 
+                (   <Button mensagem="Cadastrar Competidor" isLoading={isLoadingCreateUpdateCompetidor} act={() => cadastraAtleta()} />)}
             </Modal>
             <Modal open={isModalImportacaoOpen} onClose={() => {setIsModalImportacaoOpen(false), setArquivoSelecionado(null)}} title="Importação de Competidores">
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
