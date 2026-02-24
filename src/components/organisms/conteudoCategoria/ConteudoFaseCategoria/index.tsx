@@ -292,7 +292,7 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                         <span>Nenhuma fase encontrado</span>
                     ) : (
                     <>
-                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)"/>
+                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg)"/>
                         <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
                     </>
         
@@ -354,7 +354,7 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
                 ) : 
                 (<></>)}
 
-                <Button mensagem="Criar nova fase" act={() => criaNovaFase()} />
+                <Button mensagem="Criar nova fase" isLoading={isLoadingCreateUpdate} act={() => criaNovaFase()} />
             </Modal>
         
         </div> 

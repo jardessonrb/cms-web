@@ -6,6 +6,7 @@ import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTable
 import { useRouter } from "next/navigation";
 import { RankingFaseDto } from "@/types/fase";
 import { FaseService } from "@/services/fase-service";
+import { Spinner } from "@/components/atoms/Spinner";
 
 type ConteudoCompetidoresProps = {
     faseId: string
@@ -78,7 +79,19 @@ export function CardRankingFase({ faseId, campeonatoId }: ConteudoCompetidoresPr
                         ))}
                     </DataTableBody>
                 </DataTable>
-            ) : (<DataTableMessageEmpty>Nenhum competidor encontrado</DataTableMessageEmpty>)}
+            ) : (
+                <DataTableMessageEmpty>
+                    {rankingDaFase && rankingDaFase.length == 0 && !loading ? (
+                        <span>Nenhuma categoria encontrado</span>
+                    ) : (
+                    <>
+                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg)"/>
+                        <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+                    </>
+
+                    )}
+                </DataTableMessageEmpty>
+            )}
             
         
             {/* <div style={styles.footer}>

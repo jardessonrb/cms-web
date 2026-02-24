@@ -115,7 +115,7 @@ export function ListagemDisputa({ faseId, rodadaId, act }: ListagemDisputaProps)
                     <span>Nenhuma disputa encontrada para a rodada</span>
                     ) : (
                     <>
-                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)"/>
+                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg-light)"/>
                         <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
                     </>
         

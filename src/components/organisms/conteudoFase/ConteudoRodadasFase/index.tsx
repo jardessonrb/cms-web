@@ -39,6 +39,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
     const [loading, setLoading] = useState(true);
     const [isLoadingBuscaRodada, setIsLoadingBuscaRodada] = useState(false);
     const [isLoadingGeracaoRodadas, setIsLoadingGeracaoRodadas] = useState(false);
+    const [isLoadingDisputaParaRegistroNotas, setIsLoadingDisputaParaRegistroNotas] = useState(false);
     const [rodadas, setRodadas] = useState<RodadaDto[]>([]);
     const [paginaAtual, setPaginaAtual] = useState(0);
     const [totalDePaginas, setTotalDePaginas] = useState(10);
@@ -98,6 +99,8 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
     async function abrirModalDeRegistroDeNota(disputaId: string){
         try {
 
+            setIsModalRegistroNotaOpen(true);
+            setIsLoadingDisputaParaRegistroNotas(true);
             const disputaResponse = await DisputaService.buscaDisputaPorId(disputaId);
             const registrosOrdenados = [...(disputaResponse.registrosDisputa ?? [])]
                 .sort((a, b) => a.numeroAtleta - b.numeroAtleta)
@@ -112,7 +115,6 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             };
 
             setDisputaAtualParaRegistroNota(disputaOrdenada);
-            setIsModalRegistroNotaOpen(true);
             
             const notasDoRegistro = extrairNotas(registrosOrdenados);
             if (notasDoRegistro && notasDoRegistro.length === 3) {
@@ -125,14 +127,14 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             }
 
         } catch (error: any) {
-
             if (error.response) {
                 const exception = error.response.data as ExceptionDefault;
                 Notify.error(`${exception.erros[0]}`);
             } else {
                 Notify.error("Erro desconhecido ao tentar inscrever o competidor na categoria");
             }
-
+        } finally{
+            setIsLoadingDisputaParaRegistroNotas(false);
         }
 
     }
@@ -473,12 +475,6 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                                     ) : (<></>)}
                                     
                                    <button onClick={() => ajusteRodadasExpandidas(rodada.id)} style={{ border: "none", background: "none", cursor: "pointer"}}>
-                                        {/* <Image
-                                            src={isMostraConteudoExpandidoLinha ? "/up-arrow.svg" : "/down-arrow.svg"}
-                                            alt="toggle"
-                                            width={16}
-                                            height={16}
-                                        /> */}
                                         {isMostraConteudoExpandidoLinha ? <ButtonIcon type="UP" mensagem="Retrair"/> : <ButtonIcon type="DOWN" mensagem="Expandir"/> }
                                     </button>
                                 </DataCell>
@@ -493,7 +489,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                     <span>Nenhuma rodada encontrada</span>
                     ) : (
                     <>
-                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)"/>
+                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg)"/>
                         <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
                     </>
         
@@ -536,97 +532,107 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             </Modal>
 
             <Modal open={isModalRegistroNotaOpen} onClose={() => closeModalDeRegistroNotas()} modalStyle={{maxWidth: "900px"}} title="Registrar Notas da Disputa">
-                {(disputaAtualParaRegistroNota && getDescricaoSituacaoDisputaEnum(disputaAtualParaRegistroNota?.situacao).toUpperCase() === SituacaoDisputaEnum.CANCELADA.toUpperCase())  ? (
+                {(!isLoadingDisputaParaRegistroNotas && disputaAtualParaRegistroNota && getDescricaoSituacaoDisputaEnum(disputaAtualParaRegistroNota?.situacao).toUpperCase() === SituacaoDisputaEnum.CANCELADA.toUpperCase())  ? (
                     <div style={{display: "flex", justifyContent: "center", alignItems: 'center', padding: "20px"}}>
                         <h3 style={{color: "var(--color-error)"}}>A disputa foi cancelada</h3>
                     </div>
                 ) : (
                 <>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" , gap: "10px" }}>
-    
-                        <div style={{display: "flex", justifyContent: 'center', alignItems: 'center', maxWidth: "300px"}}>
-                            <CardRegistroDeNotas
-                                registro={disputaAtualParaRegistroNota?.registrosDisputa[0]}
-                                onChangeNotas={(atletaId, notas) => setRegistroAtleta1({atletaId, notas})}
-                                campeonatoId={campeonatoId}
+                    {!isLoadingDisputaParaRegistroNotas ? (
+                        <>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" , gap: "10px" }}>
+        
+                                <div style={{display: "flex", justifyContent: 'center', alignItems: 'center', maxWidth: "300px"}}>
+                                    <CardRegistroDeNotas
+                                        registro={disputaAtualParaRegistroNota?.registrosDisputa[0]}
+                                        onChangeNotas={(atletaId, notas) => setRegistroAtleta1({atletaId, notas})}
+                                        campeonatoId={campeonatoId}
+                                    />
+                                </div>
+            
+                                <div style={styles.containerEscolhaJuradosContainer}>
+                                    <div style={styles.containerEscolhaJuradosHeader}>
+                                        <strong>Escolha os Jurados</strong>
+                                    </div>
+                                    <div style={styles.containerEscolhaJuradosMain}>
+                                        <AsyncSelect
+                                            placeholder="Escolher Jurado"
+                                            value={jurados.length == 3 ? jurados[0] : jurado}
+                                            onSelect={(value) => atualizaJurado(0, value)}
+                                            fetchOptions={async (query) => {
+                                                const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
+                                                page: 0,
+                                                size: 5,
+                                                filtro: query && query.length >= 3 ? query : undefined,
+                                                });
+                                
+                                                return page.content.map((jurado) => ({
+                                                    id: jurado.id,
+                                                    label: `${jurado.apelido}-${jurado.grupo}`,
+                                                }));
+                                            }}  
+                                        />
+            
+                                        <AsyncSelect
+                                            placeholder="Escolher Jurado"
+                                            value={jurados.length == 3 ? jurados[1] : jurado}
+                                            onSelect={(value) => atualizaJurado(1, value)}
+                                            fetchOptions={async (query) => {
+                                                const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
+                                                page: 0,
+                                                size: 5,
+                                                filtro: query && query.length >= 3 ? query : undefined,
+                                                });
+                                
+                                                return page.content.map((jurado) => ({
+                                                    id: jurado.id,
+                                                    label: `${jurado.apelido}-${jurado.grupo}`,
+                                                }));
+                                            }}  
+                                        />
+            
+                                        <AsyncSelect
+                                            placeholder="Escolher Jurado"
+                                            value={jurados.length == 3 ? jurados[2] : jurado}
+                                            onSelect={(value) => atualizaJurado(2, value)}
+                                            fetchOptions={async (query) => {
+                                                const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
+                                                page: 0,
+                                                size: 5,
+                                                filtro: query && query.length >= 3 ? query : undefined,
+                                                });
+                                
+                                                return page.content.map((jurado) => ({
+                                                    id: jurado.id,
+                                                    label: `${jurado.apelido}-${jurado.grupo}`,
+                                                }));
+                                            }}  
+                                        />
+                                    </div>
+                                </div>
+            
+                                <div style={{display: "flex", justifyContent: 'center', alignItems: 'center', maxWidth: "300px"}}>
+                                    {disputaAtualParaRegistroNota?.registrosDisputa.length === 2 ? (
+                                        <CardRegistroDeNotas
+                                            registro={disputaAtualParaRegistroNota?.registrosDisputa[1]}
+                                            onChangeNotas={(atletaId, notas) => setRegistroAtleta2({atletaId, notas})}
+                                            campeonatoId={campeonatoId}
+                                        />
+                                    ) : (<div>Disputa do tipo individual só permite um competidor</div>)}
+                                </div>                
+                            </div>
+                            <Button style={{width: "50%", alignSelf: 'center'}} 
+                                mensagem={getDescricaoSituacaoDisputaEnum(disputaAtualParaRegistroNota?.situacao).toUpperCase() === SituacaoDisputaEnum.CONCLUIDA.toUpperCase() ? "Atualizar Notas" : "Registrar Notas"} 
+                                act={getDescricaoSituacaoDisputaEnum(disputaAtualParaRegistroNota?.situacao).toUpperCase() === SituacaoDisputaEnum.CONCLUIDA.toUpperCase()  ? atualizarNotas : salvarNotas} 
                             />
+                        </>
+
+                    ) : (
+                        <div style={{display: "flex", justifyContent: 'center', alignItems: "center", gap: "10px"}}>
+                            <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg)"/>
+                            <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
                         </div>
-    
-                        <div style={styles.containerEscolhaJuradosContainer}>
-                            <div style={styles.containerEscolhaJuradosHeader}>
-                                <strong>Escolha os Jurados</strong>
-                            </div>
-                            <div style={styles.containerEscolhaJuradosMain}>
-                                <AsyncSelect
-                                    placeholder="Escolher Jurado"
-                                    value={jurados.length == 3 ? jurados[0] : jurado}
-                                    onSelect={(value) => atualizaJurado(0, value)}
-                                    fetchOptions={async (query) => {
-                                        const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
-                                        page: 0,
-                                        size: 5,
-                                        filtro: query && query.length >= 3 ? query : undefined,
-                                        });
-                        
-                                        return page.content.map((jurado) => ({
-                                            id: jurado.id,
-                                            label: `${jurado.apelido}-${jurado.grupo}`,
-                                        }));
-                                    }}  
-                                />
-    
-                                <AsyncSelect
-                                    placeholder="Escolher Jurado"
-                                    value={jurados.length == 3 ? jurados[1] : jurado}
-                                    onSelect={(value) => atualizaJurado(1, value)}
-                                    fetchOptions={async (query) => {
-                                        const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
-                                        page: 0,
-                                        size: 5,
-                                        filtro: query && query.length >= 3 ? query : undefined,
-                                        });
-                        
-                                        return page.content.map((jurado) => ({
-                                            id: jurado.id,
-                                            label: `${jurado.apelido}-${jurado.grupo}`,
-                                        }));
-                                    }}  
-                                />
-    
-                                <AsyncSelect
-                                    placeholder="Escolher Jurado"
-                                    value={jurados.length == 3 ? jurados[2] : jurado}
-                                    onSelect={(value) => atualizaJurado(2, value)}
-                                    fetchOptions={async (query) => {
-                                        const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
-                                        page: 0,
-                                        size: 5,
-                                        filtro: query && query.length >= 3 ? query : undefined,
-                                        });
-                        
-                                        return page.content.map((jurado) => ({
-                                            id: jurado.id,
-                                            label: `${jurado.apelido}-${jurado.grupo}`,
-                                        }));
-                                    }}  
-                                />
-                            </div>
-                        </div>
-    
-                        <div style={{display: "flex", justifyContent: 'center', alignItems: 'center', maxWidth: "300px"}}>
-                            {disputaAtualParaRegistroNota?.registrosDisputa.length === 2 ? (
-                                <CardRegistroDeNotas
-                                    registro={disputaAtualParaRegistroNota?.registrosDisputa[1]}
-                                    onChangeNotas={(atletaId, notas) => setRegistroAtleta2({atletaId, notas})}
-                                    campeonatoId={campeonatoId}
-                                />
-                            ) : (<div>Disputa do tipo individual só permite um competidor</div>)}
-                        </div>                
-                    </div>
-                    <Button style={{width: "50%", alignSelf: 'center'}} 
-                        mensagem={getDescricaoSituacaoDisputaEnum(disputaAtualParaRegistroNota?.situacao).toUpperCase() === SituacaoDisputaEnum.CONCLUIDA.toUpperCase() ? "Atualizar Notas" : "Registrar Notas"} 
-                        act={getDescricaoSituacaoDisputaEnum(disputaAtualParaRegistroNota?.situacao).toUpperCase() === SituacaoDisputaEnum.CONCLUIDA.toUpperCase()  ? atualizarNotas : salvarNotas} 
-                    />
+                    )}
                 </>
                 )}
             </Modal>

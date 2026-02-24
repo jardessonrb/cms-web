@@ -311,7 +311,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                     <span>Nenhum competidor encontrado</span>
                 ) : (
                     <>
-                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)"/>
+                        <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg)"/>
                         <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
                     </>
 

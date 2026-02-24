@@ -1,11 +1,12 @@
 type SpinnerProps = {
   style?: React.CSSProperties,
   colorBackground?: string
+  colorBorderTop?: string
 };
 
 
-export function Spinner({ style, colorBackground }: SpinnerProps) {
-  return <div style={{...styles.spinner, ...style, border: colorBackground ? (`4px solid ${colorBackground}`) : "4px solid rgba(255,255,255,0.3)", borderTop: "4px solid #fff"}} />;
+export function Spinner({ style, colorBackground, colorBorderTop }: SpinnerProps) {
+  return <div style={{...styles.spinner, ...style, border: colorBackground ? (`4px solid ${colorBackground}`) : "4px solid rgba(255,255,255,0.3)", borderTop: colorBorderTop ? (`4px solid ${colorBorderTop}`) : "4px solid #fff"}} />;
 }
 
 
