@@ -3,9 +3,15 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { LogIn, UserPlus } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
+
+  if(isAuthenticated){
+    router.push("/campeonatos")
+  }
 
   return (
     <div style={styles.container}>
