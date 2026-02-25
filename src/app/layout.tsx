@@ -45,7 +45,8 @@ export default function RootLayout({
             toastOptions={{
               style: {
                 height: "80px",
-                width: "30%",
+                width: "50%",
+                minWidth: "350px",
                 fontWeight: "500",
               },
 
@@ -53,7 +54,8 @@ export default function RootLayout({
                 style: {
                   background: "var(--color-success)", // verde
                   color: "var(--color-bg-light)",
-                  fontWeight: "bold"
+                  fontWeight: "bold",
+                  minWidth: "60%"
                 },
                 iconTheme: {
                   primary: "var(--color-bg-light)",
@@ -65,7 +67,8 @@ export default function RootLayout({
                 style: {
                   background: "var(--color-error)", // vermelho
                   color: "var(--color-bg-light)",
-                  fontWeight: "bold"
+                  fontWeight: "bold",
+                  minWidth: "60%",
                 },
                 iconTheme: {
                   primary: "var(--color-bg-light)",
