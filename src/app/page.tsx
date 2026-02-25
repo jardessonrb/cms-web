@@ -9,26 +9,30 @@ export default function Home() {
 
   return (
     <div style={styles.container}>
-      {/* 🔹 Lado esquerdo (imagem) */}
+      {/* 🔸 Imagem */}
       <div style={styles.left}>
         <Image
-          src="/imagem2v2.png"
+          src="/imagem4v2.png"
           alt="Capoeira CMS"
-          width={500}
-          height={500}
+          width={700}
+          height={700}
           style={styles.image}
           priority
         />
       </div>
 
-      {/* 🔹 Lado direito (conteúdo) */}
+      {/* 🔸 Conteúdo */}
       <div style={styles.right}>
-        <h1 style={styles.title}>Championship Manager System</h1>
+        <div style={styles.badge}>CMS</div>
+
+        <h1 style={styles.title}>
+          <span style={styles.highlight}>CMS</span> Championship Manager System
+        </h1>
 
         <p style={styles.description}>
-          Gerencie campeonatos de forma simples e eficiente. O CMS permite
-          organizar atletas, categorias, fases e resultados em um só lugar,
-          trazendo mais controle e praticidade para competições esportivas.
+          Organize campeonatos de forma simples e eficiente. Gerencie atletas,
+          categorias e fases com uma plataforma moderna, rápida e pensada para
+          facilitar o seu fluxo.
         </p>
 
         <div style={styles.actions}>
@@ -40,13 +44,13 @@ export default function Home() {
             Entrar
           </button>
 
-          <button
+          {/* <button
             style={{ ...styles.button, ...styles.secondaryButton }}
             onClick={() => router.push("/register")}
           >
             <UserPlus size={18} />
             Registrar
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
@@ -56,16 +60,17 @@ export default function Home() {
 const styles: Record<string, React.CSSProperties> = {
   container: {
     display: "flex",
+    width: "100vw",
     alignItems: "center",
-    justifyContent: "center",
-    minHeight: "calc(100vh - 80px)", // desconta header
-    padding: "40px",
+    justifyContent: "space-between",
+    minHeight: "calc(100vh - 80px)",
+    padding: "60px 80px",
+    backgroundColor: "var(--color-bg-light)",
     gap: "40px",
-    backgroundColor: "var(--color-bg)",
   },
 
   left: {
-    flex: 1,
+    flex: 1.2,
     display: "flex",
     justifyContent: "center",
   },
@@ -73,6 +78,7 @@ const styles: Record<string, React.CSSProperties> = {
   image: {
     maxWidth: "100%",
     height: "auto",
+    transform: "scale(1.1)",
   },
 
   right: {
@@ -80,25 +86,44 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: "20px",
-    maxWidth: "500px",
+    maxWidth: "520px",
+  },
+
+  badge: {
+    backgroundColor: "rgba(249,115,22,0.1)",
+    color: "var(--color-primary)",
+    padding: "6px 12px",
+    borderRadius: "20px",
+    fontSize: "12px",
+    fontWeight: 700,
+    width: "fit-content",
   },
 
   title: {
-    fontSize: "32px",
+    fontSize: "36px",
     fontWeight: 700,
     color: "var(--color-text)",
+    lineHeight: "1.2",
+  },
+
+  highlight: {
+    color: "var(--color-primary)",
   },
 
   description: {
     fontSize: "16px",
+    fontWeight: 700,
     color: "var(--color-text)",
-    lineHeight: "1.6",
+    lineHeight: "1.7",
   },
 
   actions: {
     display: "flex",
-    gap: "12px",
+    gap: "14px",
+    alignItems: "flex-end",
+    justifyContent: "flex-end",
     marginTop: "10px",
+    marginRight: "20px"
   },
 
   button: {
@@ -106,11 +131,12 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     alignItems: "center",
     gap: "8px",
-    padding: "10px 16px",
-    borderRadius: "8px",
+    padding: "12px 18px",
+    borderRadius: "10px",
     cursor: "pointer",
-    fontWeight: 500,
+    fontWeight: 700,
     fontSize: "14px",
+    transition: "all 0.2s ease",
   },
 
   primaryButton: {
