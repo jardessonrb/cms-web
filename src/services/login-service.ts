@@ -1,4 +1,4 @@
-import { LoginDto, LoginForm } from "@/components/organisms/conteudoLogin";
+import { LoginDto, LoginForm } from "@/types/login";
 import { api } from "./api";
 
 

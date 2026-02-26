@@ -10,11 +10,8 @@ import { Utils } from "@/services/utils";
 import { ExceptionDefault } from "@/types/default";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { LoginForm } from "@/types/login";
 
-export type LoginForm = {
-  email: string | undefined;
-  senha: string | undefined;
-};
 
 export function ConteudoLogin() {
   const [loginForm, setLoginForm] = useState<LoginForm>({
