@@ -33,7 +33,11 @@ export const Notify = {
   info(message: string, options?: NotifyOptions) {
     const duration = options?.duration ?? 3000;
 
-    toast(message, { duration });
+    toast(message, { 
+      duration, 
+      style: {background: "var(--color-primary)", color: "var(--color-bg-light)"}, 
+      iconTheme: {primary: "var(--color-bg-light)",secondary: "var(--color-primary)"}
+    });
 
     if (options?.onClose) {
       setTimeout(() => {

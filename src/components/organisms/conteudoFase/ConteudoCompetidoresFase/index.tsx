@@ -17,27 +17,26 @@ import { CategoriaService } from "@/services/categoria-service";
 import { InscricaoAtletaCategoriaForm } from "@/types/inscricao-atleta-categoria";
 import { SituacaoEstilizada } from "@/components/atoms/SituacaoEstilizada";
 import { Spinner } from "@/components/atoms/Spinner";
+import { FaseService } from "@/services/fase-service";
 
 type ConteudoCompetidoresProps = {
     faseId: string
     campeonatoId: string
+    categoriaId: string
 }
 
 
-export function ConteudoCompetidoresFase({ faseId, campeonatoId }: ConteudoCompetidoresProps){
+export function ConteudoCompetidoresFase({ faseId, campeonatoId, categoriaId }: ConteudoCompetidoresProps){
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [isLoadingBuscaAtletas, setIsLoadingBuscaAtletas] = useState(false);
+    const [isLoadingAdicionarAtletaNaFase, setIsLoadingAdicionarAtletaNaFase] = useState(false);
     const [atletas, setAtletas] = useState<AtletaListagemDto[]>([]);
     const [paginaAtual, setPaginaAtual] = useState(0);
     const [totalDePaginas, setTotalDePaginas] = useState(10);
     const [termoBusca, setTermoBusca] = useState<string | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [competidor, setCompetidor] = useState<SelectOption | null>(null);
-
-    function mostraAtletas(atletas: AtletaListagemDto[]){
-        setAtletas(atletas);
-    }
 
     async function carregaDadosComFiltro(){
         try{
@@ -77,6 +76,31 @@ export function ConteudoCompetidoresFase({ faseId, campeonatoId }: ConteudoCompe
         }
     }
 
+    async function adicionarCompetidorNaFase(){
+        try{
+
+            if(!competidor || !competidor.id){
+                Notify.error("Selecione um competidor");
+                return;
+            }
+
+            setIsLoadingAdicionarAtletaNaFase(true);
+            await FaseService.adicionarAtletaNaFase(faseId, competidor.id);
+            Notify.info("Atenção: O competidor foi adicionado na fase, mas precisa ajustar suas disputas");
+            carregaDados();
+        }catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar adicionar o competidores na fase")
+            }
+        } finally {
+            setIsLoadingAdicionarAtletaNaFase(false);
+            setIsModalOpen(false);
+        }
+    }
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -93,9 +117,9 @@ export function ConteudoCompetidoresFase({ faseId, campeonatoId }: ConteudoCompe
                     />
                     <Button mensagem="buscar" isLoading={isLoadingBuscaAtletas} style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
                 </div>
-                {/* <Button mensagem="Inscrever Competidor na Categoria" act={() => {
+                <Button mensagem="Adicionar competidor na fase" act={() => {
                     setIsModalOpen(true);
-                }}/> */}
+                }}/>
             </div>
             {atletas && atletas.length > 0 ? (
                 <DataTable>
@@ -154,8 +178,21 @@ export function ConteudoCompetidoresFase({ faseId, campeonatoId }: ConteudoCompe
                     />
                 }
             </div>
-            <Modal open={isModalOpen} onClose={() => {setIsModalOpen(false), setCompetidor(null)}} title="Inscrever Competidor">
-                <h1>Em construção</h1>
+            <Modal open={isModalOpen} onClose={() => {setIsModalOpen(false), setCompetidor(null)}} title="Adicionar competidor">
+                <AsyncSelect
+                    placeholder="Escolher Competidor"
+                    value={competidor}
+                    onSelect={setCompetidor}
+                    fetchOptions={async (query) => {
+                        const page = await AtletaService.listaAtletasDaCategoria(categoriaId, {page: 0, size: 5, situacao: 'ATIVO', filtro: (query && query.length >= 3  || Utils.isNumeroValido(query) ? query : undefined)});
+                        return page.content.map((c) => ({
+                            id: c.id,
+                            label: `${c.numero} - ${c.nome}(${c.apelido})`,
+                        }));
+                    }}
+                />
+
+                <Button mensagem="Adicionar" isLoading={isLoadingAdicionarAtletaNaFase} act={() => adicionarCompetidorNaFase()} />
             </Modal>
         
         </div> 

@@ -40,4 +40,9 @@ export const FaseService = {
     const response = await api.put<FaseDto>(`/fase/${faseId}/compartilhar`);
     return response.data;
   },
+  async adicionarAtletaNaFase(faseId: string, atletaId: string): Promise<void> {
+    const response = await api.post<FaseDto>(`/fase/${faseId}/atleta/${atletaId}/adicionar`);
+    return;
+  },
+  
 }

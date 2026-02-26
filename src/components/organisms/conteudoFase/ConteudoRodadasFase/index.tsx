@@ -474,7 +474,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                                 <DataCell style={{display: "flex", flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center'}}>
                                     {rodada.situacao.toUpperCase() != SituacaoRodadaEnum.FINALIZADA.toUpperCase() ? (
                                         <Button 
-                                            mensagem="Finalizar rodada"
+                                            mensagem="Finalizar"
                                             act={() => finalizarRodada(rodada.id, rodada.nome)}
                                             isDisable={rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.situacao.toUpperCase() == SituacaoRodadaEnum.FINALIZADA.toUpperCase()}
                                             style={{opacity: (rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.situacao.toUpperCase() == SituacaoRodadaEnum.FINALIZADA.toUpperCase()) ? "0.5" : "1.0"}}

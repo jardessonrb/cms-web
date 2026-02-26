@@ -129,7 +129,7 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
       </CardTitle>
       <Tab
         tabs={[
-          { label: "Competidores da fase", content: <ConteudoCompetidoresFase faseId={faseId} campeonatoId={categoria.campeonatoId}/>},
+          { label: "Competidores da fase", content: <ConteudoCompetidoresFase faseId={faseId} campeonatoId={categoria.campeonatoId} categoriaId={categoria.id}/>},
           { label: "Rodadas", content: <ConteudoRodasFase categoriaId={categoriaId} faseId={faseId} campeonatoId={categoria.campeonatoId}/>},
           { label: "Ranking", content: <CardRankingFase faseId={faseId} campeonatoId={categoria.campeonatoId} />}
         ]}
