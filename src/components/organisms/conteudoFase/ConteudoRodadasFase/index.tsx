@@ -39,6 +39,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
     const [loading, setLoading] = useState(true);
     const [isLoadingBuscaRodada, setIsLoadingBuscaRodada] = useState(false);
     const [isLoadingGeracaoRodadas, setIsLoadingGeracaoRodadas] = useState(false);
+    const [isLoadingRegistroNotas, setIsLoadingRegistroNotas] = useState(false);
     const [isLoadingDisputaParaRegistroNotas, setIsLoadingDisputaParaRegistroNotas] = useState(false);
     const [rodadas, setRodadas] = useState<RodadaDto[]>([]);
     const [paginaAtual, setPaginaAtual] = useState(0);
@@ -216,6 +217,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
         }
 
         try {
+            setIsLoadingRegistroNotas(true)
             const resposta = await DisputaService.registrarNotas(disputaAtualParaRegistroNota?.id, body);
             Notify.success("Notas registradas com sucesso.")
             setIsModalRegistroNotaOpen(false);
@@ -232,6 +234,8 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             }else{
                 Notify.error("Erro desconhecido ao tentar registrar as notas.")
             }
+        } finally {
+            setIsLoadingRegistroNotas(false)
         }
     }
     
@@ -247,6 +251,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
         }
 
        try {
+            setIsLoadingRegistroNotas(true);
             const resposta = await DisputaService.atualizarNotas(disputaAtualParaRegistroNota?.id, body);
             Notify.success("Notas atualizadas com sucesso.")
             setIsModalRegistroNotaOpen(false);
@@ -262,6 +267,8 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             }else{
                 Notify.error("Erro desconhecido ao tentar atualizar as notas.")
             }
+        } finally {
+            setIsLoadingRegistroNotas(false);
         }
     }
 
@@ -624,6 +631,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                             <Button style={{width: "50%", alignSelf: 'center'}} 
                                 mensagem={getDescricaoSituacaoDisputaEnum(disputaAtualParaRegistroNota?.situacao).toUpperCase() === SituacaoDisputaEnum.CONCLUIDA.toUpperCase() ? "Atualizar Notas" : "Registrar Notas"} 
                                 act={getDescricaoSituacaoDisputaEnum(disputaAtualParaRegistroNota?.situacao).toUpperCase() === SituacaoDisputaEnum.CONCLUIDA.toUpperCase()  ? atualizarNotas : salvarNotas} 
+                                isLoading={isLoadingRegistroNotas}
                             />
                         </>
 
