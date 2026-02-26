@@ -26,3 +26,9 @@ export function getDescricaoSituacaoCampeonatoEnum(e: SituacaoCampeonatoEnum | u
     if(e == undefined || e === null) return "";
     return SituacaoCampeonatoEnum[e.toString() as keyof typeof SituacaoCampeonatoEnum]
 }
+
+
+export type CompartilhamentoDto = {
+  isHabilitado: boolean
+  token: string
+} 

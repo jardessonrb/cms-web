@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { ConteudoCategorias } from "../../../organisms/conteudoCampeonato/ConteudoCategorias";
 import { ConteudoJurados } from "../../../organisms/conteudoCampeonato/ConteudoJurados";
 import { CardTitle } from "../../../atoms/CardTitle";
+import { ConteudoCompartilhamento } from "../../conteudoCampeonato/ConteudoCompartilhamento";
 
 type Props = {
     campeonatoId: string
@@ -65,6 +66,7 @@ export default function CampeonatoDetalhe({ campeonatoId }: Props) {
           { label: "Competidores", content: <ConteudoCompetidores  campeonatoId={campeonatoId}/> },
           { label: "Categorias", content: <ConteudoCategorias campeonatoId={campeonatoId} /> },
           { label: "Jurados", content: <ConteudoJurados campeonatoId={campeonatoId} /> },
+          { label: "Compartilhamento", content: <ConteudoCompartilhamento campeonatoId={campeonatoId} /> },
         ]}
       />
 

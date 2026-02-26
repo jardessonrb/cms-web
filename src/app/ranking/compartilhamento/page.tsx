@@ -1,52 +1,72 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Modal } from "../../../modecules/ModalBase";
-import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "../../../Table";
-import { useRouter } from "next/navigation";
-import { RankingFaseDto } from "@/types/fase";
-import { FaseService } from "@/services/fase-service";
 import { Spinner } from "@/components/atoms/Spinner";
+import { DataCell, DataRow, DataTable, DataTableBody, DataTableHeader, DataTableMessageEmpty } from "@/components/Table";
+import { Notify } from "@/lib/notify";
+import { FaseService } from "@/services/fase-service";
+import { RankingService } from "@/services/Ranking";
+import { ExceptionDefault } from "@/types/default";
+import { RankingFaseDto } from "@/types/fase";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-type ConteudoCompetidoresProps = {
-    faseId: string
-    campeonatoId: string
-}
-
-
-export function CardRankingFase({ faseId, campeonatoId }: ConteudoCompetidoresProps){
+export default function CompartilhamentoPage() {
     const [loading, setLoading] = useState(true);
+    const searchParams = useSearchParams();
     const [rankingDaFase, setRankingDaFase] = useState<RankingFaseDto[]>([]);
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const token = searchParams.get("token");
+    const isFirstRun = useRef(true);
 
     async function carregaDados(){
-        FaseService.buscaRankingFase(faseId)
-            .then((ranking) => {
-                setRankingDaFase(ranking)
-            })
-            .finally(() => setLoading(false));
+        if(!token){
+            Notify.error("O token é obrigatório para visualizar o ranking da competição")
+            return;
+        }
+
+        const isFirst = isFirstRun.current;
+
+        try{
+            if (isFirst){
+                setLoading(true);
+            }
+            const resultado = await RankingService.buscaRankingFase(token);
+             if (isFirst){
+                Notify.success("Ranking buscado com sucesso.");
+            }
+            setRankingDaFase(resultado);
+
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar habilitar compartilhamento.")
+            }
+        } finally {
+            if (isFirst) {
+                setLoading(false);
+                isFirstRun.current = false;
+            }
+        }
     }
 
     useEffect(() => {
         carregaDados();
-    }, []);
+        // 🔹 polling a cada 5 segundos
+        const interval = setInterval(() => {
+            carregaDados();
+        }, 10000);
+
+        // 🔹 cleanup (MUITO IMPORTANTE)
+        return () => clearInterval(interval);
+    }, [token]);
 
     return (
-        <div>
+        <div style={{width: "80%", backgroundColor: "var(--color-bg-light)", padding: "10px"}}>
             <div style={styles.top}>
-                {/* <div style={{width: "25%", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-                    <Input 
-                        placeholder="Digite o nome ou apelido para buscar"
-                        style={{width: "80%"}}
-                        value={termoBusca}
-                        onChange={setTermoBusca}
-                    />
-                    <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
-                </div> */}
-                {/* <Button mensagem="Inscrever Competidor na Categoria" act={() => {
-                    setIsModalOpen(true);
-                }}/> */}
-                <h1>Pontuação parcial - Ranking</h1>
+                <h1>Ranking</h1>
+                <h3>{rankingDaFase && rankingDaFase.length > 0 && `Categoria: ${rankingDaFase[0].categoria}`}</h3>
+                <h3>{rankingDaFase && rankingDaFase.length > 0 && `Fase: ${rankingDaFase[0].fase}`}</h3>
             </div>
             {rankingDaFase && rankingDaFase.length > 0 ? (
                 <DataTable>
@@ -78,7 +98,7 @@ export function CardRankingFase({ faseId, campeonatoId }: ConteudoCompetidoresPr
             ) : (
                 <DataTableMessageEmpty>
                     {rankingDaFase && rankingDaFase.length == 0 && !loading ? (
-                        <span>Nenhuma categoria encontrado</span>
+                        <span>Ranking não encontrado</span>
                     ) : (
                     <>
                         <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg)"/>
@@ -87,26 +107,10 @@ export function CardRankingFase({ faseId, campeonatoId }: ConteudoCompetidoresPr
 
                     )}
                 </DataTableMessageEmpty>
-            )}
-            
-        
-            {/* <div style={styles.footer}>
-                {rankingDaFase && rankingDaFase.length > 0 && 
-                    <Pagination
-                        totalPages={totalDePaginas}
-                        currentPage={paginaAtual}
-                        onPageChange={setPaginaAtual}
-                    />
-                }
-            </div> */}
-            <Modal open={isModalOpen} onClose={() => {setIsModalOpen(false)}} title="Inscrever Competidor">
-                <h1>Em construção</h1>
-            </Modal>
-        
-        </div> 
+            )}                
+        </div>
     );
 }
-
 
 const styles: Record<string, React.CSSProperties> = {
     top: {

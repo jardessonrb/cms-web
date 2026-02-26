@@ -32,4 +32,12 @@ export const FaseService = {
       const response = await api.post<ValidacaoCorteDto>(`/fase/fase-anterior/${faseAnteriorId}/atletas/${quantidadeAtletas}/validar-corte`, {});
       return response.data;
   },
+  async desabilitarCompartilhamento(faseId: string): Promise<FaseDto> {
+    const response = await api.put<FaseDto>(`/fase/${faseId}/parar-compartilhamento`);
+    return response.data;
+  },
+  async habilitarCompartilhamento(faseId: string): Promise<FaseDto> {
+    const response = await api.put<FaseDto>(`/fase/${faseId}/compartilhar`);
+    return response.data;
+  },
 }

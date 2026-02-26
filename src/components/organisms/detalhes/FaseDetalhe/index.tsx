@@ -13,6 +13,7 @@ import { FaseService } from "@/services/fase-service";
 import { ConteudoRodasFase } from "../../conteudoFase/ConteudoRodadasFase";
 import { ConteudoCompetidoresFase } from "../../conteudoFase/ConteudoCompetidoresFase";
 import { CardRankingFase } from "../../conteudoFase/CardRankingFase";
+import { SwitchInput } from "@/components/atoms/SwitchInput";
 
 type Props = {
     categoriaId: string,
@@ -22,6 +23,7 @@ type Props = {
 export default function FaseDetalhe({ categoriaId , faseId}: Props) {
   const [categoria, setCategoria] = useState<CategoriaDto>({} as CategoriaDto);
   const [fase, setFase] = useState<FaseDto>({} as FaseDto);
+  const [isLoadingHabilitarEDesabilitarCompartilhamento, setIsLoadingHabilitarEDesabilitarCompartilhamento] = useState(false);
 
   async function buscaCategoriaPorId() {
     try {
@@ -51,6 +53,44 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
     }
   }
 
+  async function desabilitarCompartilhamento() {
+      try{
+          setIsLoadingHabilitarEDesabilitarCompartilhamento(true);
+          const resultado = await FaseService.desabilitarCompartilhamento(faseId);
+          Notify.success("Compartilhamento desabilitado com sucesso.");
+          setFase(resultado);
+
+      } catch(error: any){
+          if(error.response){
+              const exception = error.response.data as ExceptionDefault;
+              Notify.error(exception.erros[0])
+          }else{
+              Notify.error("Erro desconhecido ao tentar desabilitar compartilhamento.")
+          }
+      } finally {
+          setIsLoadingHabilitarEDesabilitarCompartilhamento(false);
+      }
+  }
+  
+  async function habilitarCompartilhamento() {
+      try{
+          setIsLoadingHabilitarEDesabilitarCompartilhamento(true);
+          const resultado = await FaseService.habilitarCompartilhamento(faseId);
+          Notify.success("Compartilhamento habilitado com sucesso.");
+          setFase(resultado);
+
+      } catch(error: any){
+          if(error.response){
+              const exception = error.response.data as ExceptionDefault;
+              Notify.error(exception.erros[0])
+          }else{
+              Notify.error("Erro desconhecido ao tentar habilitar compartilhamento.")
+          }
+      } finally {
+          setIsLoadingHabilitarEDesabilitarCompartilhamento(false);
+      }
+  }
+
   useEffect(() => {
     buscaCategoriaPorId();
     buscaFasePorId();
@@ -62,6 +102,19 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
         <div style={{display: "flex", width: "100%", flexDirection: 'column', alignItems: 'center', justifyContent: "center"}}>
             <h1>Fase {fase?.nome}</h1>
             <strong>Critério de entrada {getDescricaoCriteriorEntradaEnum(fase.criterioEntrada)} - Situação {fase?.situacao}</strong>
+            <SwitchInput
+                  value={fase.isCompartilhada}
+                  disabled={isLoadingHabilitarEDesabilitarCompartilhamento}
+                  onChange={async (valor) => {
+                      if(valor){
+                        await habilitarCompartilhamento()
+                      }else{
+                         await desabilitarCompartilhamento()
+                      }
+                  }}
+                  labelOn={isLoadingHabilitarEDesabilitarCompartilhamento ? "Carregando" : "Compartilhamento Ativo"}
+                  labelOff={isLoadingHabilitarEDesabilitarCompartilhamento ? "Carregando" : "Não Compartilhado"}
+              />
         </div>
         {/* <div style={styles.containerDados}>
           <div>

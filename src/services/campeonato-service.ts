@@ -1,6 +1,6 @@
 import { api } from "./api";
 import { Page } from "../types/page";
-import { CampeonatoDetalhadoDto, CampeonatoDto, CampeonatoForm } from "../types/campeonato";
+import { CampeonatoDetalhadoDto, CampeonatoDto, CampeonatoForm, CompartilhamentoDto } from "../types/campeonato";
 import { ListParams } from "../types/default";
 
 
@@ -19,8 +19,25 @@ export const CampeonatoService = {
     const response = await api.get<CampeonatoDetalhadoDto>(`/campeonato/${campeonatoId}`);
     return response.data;
   },
-   async atualizarCampeonato(campeonatoId: string, body: CampeonatoForm): Promise<CampeonatoDto> {
+  async atualizarCampeonato(campeonatoId: string, body: CampeonatoForm): Promise<CampeonatoDto> {
     const response = await api.put<CampeonatoDto>(`/campeonato/${campeonatoId}`, body);
     return response.data;
   },
+  async criarCompartilhamento(campeonatoId: string): Promise<CompartilhamentoDto> {
+    const response = await api.post<CompartilhamentoDto>(`/campeonato/${campeonatoId}/criar-compartilhamento`);
+    return response.data;
+  },
+  async buscarCompartilhamentoCampeonatos(campeonatoId: string): Promise<CompartilhamentoDto> {
+    const response = await api.get<CompartilhamentoDto>(`/campeonato/${campeonatoId}/compartilhamento`);
+    return response.data;
+  },
+  async desabilitarCompartilhamento(campeonatoId: string): Promise<CompartilhamentoDto> {
+    const response = await api.put<CompartilhamentoDto>(`/campeonato/${campeonatoId}/desabilitar-compartilhamento`);
+    return response.data;
+  },
+  async habilitarCompartilhamento(campeonatoId: string): Promise<CompartilhamentoDto> {
+    const response = await api.put<CompartilhamentoDto>(`/campeonato/${campeonatoId}/habilitar-compartilhamento`);
+    return response.data;
+  },
+
 };

@@ -13,6 +13,7 @@ export type FaseDto = {
   ordem: number
   quantidadeRodadas: number
   faseAnterior: FaseDto
+  isCompartilhada: boolean
 }
 
 export type FaseForm = {
