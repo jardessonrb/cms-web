@@ -83,10 +83,10 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
     }
 
     async function carregaDadosComFiltro(){
-        const requestId = ++requestIdRef.current;
+        // const requestId = ++requestIdRef.current;
         setIsLoadingBuscaCompetidores(true);
         try{
-            if (requestId !== requestIdRef.current) return;
+            // if (requestId !== requestIdRef.current) return;
 
             const paginaAtletas = await AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10, filtro: (!!termoBusca && termoBusca.length >= 3  || Utils.isNumeroValido(termoBusca) ? termoBusca : undefined)});
             setTotalDePaginas(paginaAtletas.totalPages);
@@ -99,9 +99,11 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                 Notify.error("Erro desconhecido ao tentar listar competidores.")
             }
         }finally {
-            if (requestId === requestIdRef.current) {
-                setIsLoadingBuscaCompetidores(false);
-            }
+            // if (requestId === requestIdRef.current) {
+            //     setIsLoadingBuscaCompetidores(false);
+            // }
+
+            setIsLoadingBuscaCompetidores(false);
         }
     }
 
@@ -237,7 +239,6 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             setCompetidorParaCancelamentoId(atletaId);
             const response = await AtletaService.cancelarAtleta(atletaId);
             Notify.success("Competidor cancelado com sucesso.")
-            setTermoBusca(undefined)
             await carregaDados();      
         } catch(error: any){
             if(error.response){
@@ -311,7 +312,8 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                                 <DataCell style={{display: "flex", justifyContent: 'center', flexDirection:"row", gap: "20px"}}>
                                     <ButtonIcon mensagem="Editar" act={() => abrirModalAtualizacao(atleta.id)} type="UPDATE"/>
                                     <Button mensagem="Cancelar" isLoading={(isLoadingCreateUpdateCompetidor && competidorParaCancelamentoId === atleta.id) ? true : false} act={() => cancelarAtleta(atleta.id)}
-                                        style={{backgroundColor: "var(--color-error)"}}
+                                        style={{backgroundColor: (atleta.situacao?.toUpperCase() === "CANCELADO" ? "var(--color-error-opc)" : "var(--color-error)")}}
+                                        isDisable={(atleta.situacao?.toUpperCase() === "CANCELADO")}
                                     />
                                 </DataCell>
                             </DataRow>

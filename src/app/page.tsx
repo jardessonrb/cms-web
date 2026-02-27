@@ -20,8 +20,8 @@ export default function Home() {
         <Image
           src="/imagem4v2.png"
           alt="Capoeira CMS"
-          width={700}
-          height={700}
+          width={600}
+          height={600}
           style={styles.image}
           priority
         />
