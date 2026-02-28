@@ -109,12 +109,9 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
 
     async function carregaDados(){
         if(!termoBusca || termoBusca?.length == 0){
-            const requestId = ++requestIdRef.current;
-            setLoading(true);
-
+            
             try{
-                if (requestId !== requestIdRef.current) return;
-    
+                setLoading(true);
                 const paginaAtletas = await AtletaService.listaAtletasDoCampeonato(campeonatoId, {page: paginaAtual, size: 10});
                 setTotalDePaginas(paginaAtletas.totalPages);
                 mostraAtletas(paginaAtletas.content);
@@ -126,9 +123,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                     Notify.error("Erro desconhecido ao tentar listar competidores.")
                 }
             }finally {
-                if (requestId === requestIdRef.current) {
-                    setLoading(false);
-                }
+                setLoading(false);
             }
         }
     }
@@ -239,6 +234,7 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             setCompetidorParaCancelamentoId(atletaId);
             const response = await AtletaService.cancelarAtleta(atletaId);
             Notify.success("Competidor cancelado com sucesso.")
+            setTermoBusca("");
             await carregaDados();      
         } catch(error: any){
             if(error.response){

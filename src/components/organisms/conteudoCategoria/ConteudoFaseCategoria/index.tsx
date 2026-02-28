@@ -207,7 +207,7 @@ export function ConteudoFaseCategoria({ categoriaId, campeonatoId }: ConteudoFas
           return "SUCCESS"
         }
     
-        if(situacao === "Finalizado"){
+        if(situacao === "Finalizada"){
           return "CONFIRM"
         }
 

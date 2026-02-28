@@ -103,6 +103,12 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
             setIsModalRegistroNotaOpen(true);
             setIsLoadingDisputaParaRegistroNotas(true);
             const disputaResponse = await DisputaService.buscaDisputaPorId(disputaId);
+
+            if(disputaResponse.situacao.toUpperCase() === SituacaoDisputaEnum.CANCELADA.toUpperCase()){
+                setDisputaAtualParaRegistroNota(disputaResponse);
+                return;
+            }
+
             const registrosOrdenados = [...(disputaResponse.registrosDisputa ?? [])]
                 .sort((a, b) => a.numeroAtleta - b.numeroAtleta)
                 .map(registro => ({
@@ -132,7 +138,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                 const exception = error.response.data as ExceptionDefault;
                 Notify.error(`${exception.erros[0]}`);
             } else {
-                Notify.error("Erro desconhecido ao tentar inscrever o competidor na categoria");
+                Notify.error("Erro desconhecido ao tentar buscar disputa");
             }
         } finally{
             setIsLoadingDisputaParaRegistroNotas(false);
@@ -472,15 +478,12 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                                     <SituacaoEstilizada children={getDescricaoSituacaoRodadaEnum(rodada.situacao)} funcType={situacao => definirCorConformeSituacao(situacao)} />
                                 </DataCell>
                                 <DataCell style={{display: "flex", flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center'}}>
-                                    {rodada.situacao.toUpperCase() != SituacaoRodadaEnum.FINALIZADA.toUpperCase() ? (
-                                        <Button 
-                                            mensagem="Finalizar"
-                                            act={() => finalizarRodada(rodada.id, rodada.nome)}
-                                            isDisable={rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.situacao.toUpperCase() == SituacaoRodadaEnum.FINALIZADA.toUpperCase()}
-                                            style={{opacity: (rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.situacao.toUpperCase() == SituacaoRodadaEnum.FINALIZADA.toUpperCase()) ? "0.5" : "1.0"}}
-                                        />
-                                    ) : (<></>)}
-                                    
+                                    <Button 
+                                        mensagem="Finalizar"
+                                        act={() => finalizarRodada(rodada.id, rodada.nome)}
+                                        isDisable={rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.situacao.toUpperCase() == SituacaoRodadaEnum.FINALIZADA.toUpperCase()}
+                                        style={{opacity: (rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.disputasConcluidas != (rodada.disputasConcluidas + rodada.disputasPendentes) || rodada.situacao.toUpperCase() == SituacaoRodadaEnum.FINALIZADA.toUpperCase()) ? "0.5" : "1.0"}}
+                                    />
                                    <button onClick={() => ajusteRodadasExpandidas(rodada.id)} style={{ border: "none", background: "none", cursor: "pointer"}}>
                                         {isMostraConteudoExpandidoLinha ? <ButtonIcon type="UP" mensagem="Retrair"/> : <ButtonIcon type="DOWN" mensagem="Expandir"/> }
                                     </button>

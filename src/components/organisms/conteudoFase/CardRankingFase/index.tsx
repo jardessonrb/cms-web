@@ -78,7 +78,7 @@ export function CardRankingFase({ faseId, campeonatoId }: ConteudoCompetidoresPr
             ) : (
                 <DataTableMessageEmpty>
                     {rankingDaFase && rankingDaFase.length == 0 && !loading ? (
-                        <span>Nenhuma categoria encontrado</span>
+                        <span>Nenhum ranking encontrado</span>
                     ) : (
                     <>
                         <Spinner style={{width: "50px", height: "50px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg)"/>
