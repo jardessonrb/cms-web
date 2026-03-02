@@ -5,13 +5,14 @@ import { ConteudoCompetidores } from "@/components/organisms/conteudoCampeonato/
 import { Notify } from "@/lib/notify";
 import { CampeonatoService } from "@/services/campeonato-service";
 import { Utils } from "@/services/utils";
-import { CampeonatoDetalhadoDto } from "@/types/campeonato";
+import { CampeonatoDetalhadoDto, getDescricaoSituacaoCampeonatoEnum } from "@/types/campeonato";
 import { ExceptionDefault } from "@/types/default";
 import { useEffect, useState } from "react";
 import { ConteudoCategorias } from "../../../organisms/conteudoCampeonato/ConteudoCategorias";
 import { ConteudoJurados } from "../../../organisms/conteudoCampeonato/ConteudoJurados";
 import { CardTitle } from "../../../atoms/CardTitle";
 import { ConteudoCompartilhamento } from "../../conteudoCampeonato/ConteudoCompartilhamento";
+import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEstilizada";
 
 type Props = {
     campeonatoId: string
@@ -35,6 +36,18 @@ export default function CampeonatoDetalhe({ campeonatoId }: Props) {
     }
   }
 
+  function definirCorConformeSituacao(situacao: string): SituacaoType {
+    if(situacao === "Iniciado" || situacao === "Criado"){
+      return "SUCCESS"
+    }
+
+    if(situacao === "Finalizado"){
+      return "CONFIRM"
+    }
+
+    return "DANGER"
+  }
+
   useEffect(() => {
     buscaCampeonatoPorId();
   }, []);
@@ -44,7 +57,10 @@ export default function CampeonatoDetalhe({ campeonatoId }: Props) {
       <CardTitle>
         <div style={{display: "flex", width: "100%", flexDirection: 'column', alignItems: 'center', justifyContent: "center"}}>
             <h1>Competição {campeonato?.nome}</h1>
-            <strong>Criado em {Utils.formataDataBR(campeonato?.criadoEm)} - Situação {campeonato?.situacao}</strong>
+            <div style={{display: "flex", justifyContent: "center", alignItems: "center", gap: "20px"}}>
+              <strong>Criado por {campeonato?.nomeUsuarioCriador} em {Utils.formataDataBR(campeonato?.criadoEm)}.</strong>
+              <SituacaoEstilizada children={getDescricaoSituacaoCampeonatoEnum(campeonato?.situacao)} funcType={situacao => definirCorConformeSituacao(situacao)}/>
+            </div>
         </div>
         <div style={styles.containerDadosCampeonato}>
           <div>

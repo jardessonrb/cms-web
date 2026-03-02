@@ -150,7 +150,12 @@ export default function CampeonatosPage() {
           <DataTableBody>
             {campeonatos.map((campeonatoDto) => (
               <DataRow key={campeonatoDto.id} columns="3fr 1fr 1fr">
-                <DataCell>{campeonatoDto.nome}</DataCell>
+                <DataCell>
+                  <div style={{display: "flex", justifyContent: "center", flexDirection: "column", gap: "10px"}}>
+                      <span style={{fontWeight: "bold", textTransform: "uppercase"}}>{campeonatoDto.nome}</span>
+                      <span>Criado por <span style={{fontWeight: "bold"}}>{campeonatoDto.nomeUsuarioCriador}</span></span>
+                  </div>
+                </DataCell>
                 <DataCell>
                   <SituacaoEstilizada children={getDescricaoSituacaoCampeonatoEnum(campeonatoDto.situacao)} funcType={situacao => definirCorConformeSituacao(situacao)}/>
                 </DataCell>

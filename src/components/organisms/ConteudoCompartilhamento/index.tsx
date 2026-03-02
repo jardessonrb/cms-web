@@ -74,10 +74,10 @@ export default function ConteudoCompartilhamento() {
                         <div><strong>Posição</strong></div>
                         <div><strong>Competidor</strong></div>
                         <div><strong>Situação</strong></div>
-                        <div><strong>Rodadas Disputadas</strong></div>
-                        <div><strong>Nota Individual Total</strong></div>
-                        <div><strong>Nota Por Dupla Total</strong></div>
-                        <div><strong>Somatório Total</strong></div>
+                        <div><strong>Rodadas Concluídas</strong></div>
+                        <div><strong>Soma Individual</strong></div>
+                        <div><strong>Soma Por Dupla</strong></div>
+                        <div><strong>Pontuação Total</strong></div>
                         {/* <div style={{display: "flex", justifyContent: 'center'}}><strong>Ações</strong></div> */}
                     </DataTableHeader>
         
@@ -87,10 +87,16 @@ export default function ConteudoCompartilhamento() {
                                 <DataCell>{pontuacao.posicao}°</DataCell>
                                 <DataCell>{pontuacao.competidor}({pontuacao.numeroCompetidor})</DataCell>
                                 <DataCell>{pontuacao.situacao}</DataCell>
-                                <DataCell>{pontuacao.partidasConcluidas} de {pontuacao.partidas}</DataCell>
-                                <DataCell>{pontuacao.notaIndividual}</DataCell>
-                                <DataCell>{pontuacao.notaDupla}</DataCell>
-                                <DataCell>{pontuacao.total}</DataCell>
+                                <DataCell style={{justifyContent: "center", alignItems: "center"}}>{pontuacao.partidasConcluidas} de {pontuacao.partidas}</DataCell>
+                                <DataCell style={{justifyContent: "center", alignItems: "center"}}>{pontuacao.notaIndividual}</DataCell>
+                                <DataCell style={{justifyContent: "center", alignItems: "center"}}>{pontuacao.notaDupla}</DataCell>
+                                <DataCell style={{justifyContent: "center", alignItems: "center"}}>
+                                    {/* {pontuacao.total} */}
+                                    <div style={{width: "100%", display: "flex", justifyContent: "center", alignItems: "center", gap: "20px"}}>
+                                        {pontuacao.total}
+                                        {pontuacao.totalDesempate && pontuacao.totalDesempate > 0 ? (<span style={{color: "var(--color-success)"}}>{pontuacao.totalDesempate + " +"}</span>) : (<></>)}
+                                    </div>
+                                </DataCell>
                             </DataRow>
                         ))}
                     </DataTableBody>

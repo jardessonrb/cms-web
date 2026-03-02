@@ -43,6 +43,7 @@ export type RankingFaseDto = {
   notaIndividual: number
   notaDupla: number
   total: number
+  totalDesempate: number
   posicao: number
 }
 

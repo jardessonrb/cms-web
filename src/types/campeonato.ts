@@ -3,6 +3,7 @@ export type CampeonatoDto = {
   nome: string,
   situacao: SituacaoCampeonatoEnum,
   criadoEm: string,
+  nomeUsuarioCriador: string
 }
 
 export enum SituacaoCampeonatoEnum {
