@@ -18,6 +18,8 @@ import { InscricaoAtletaCategoriaForm } from "@/types/inscricao-atleta-categoria
 import { SituacaoEstilizada } from "@/components/atoms/SituacaoEstilizada";
 import { Spinner } from "@/components/atoms/Spinner";
 import { FaseService } from "@/services/fase-service";
+import { ButtonIcon } from "@/components/atoms/ButtonIcon";
+import { RelatorioService } from "@/services/relatorios-service";
 
 type ConteudoCompetidoresProps = {
     faseId: string
@@ -37,6 +39,7 @@ export function ConteudoCompetidoresFase({ faseId, campeonatoId, categoriaId }: 
     const [termoBusca, setTermoBusca] = useState<string | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [competidor, setCompetidor] = useState<SelectOption | null>(null);
+    const [isLoadingDownloadCompetidoresDaFase, setIsLoadingDownloadCompetidoresDaFase] = useState<boolean>(false);
 
     async function carregaDadosComFiltro(){
         try{
@@ -101,6 +104,22 @@ export function ConteudoCompetidoresFase({ faseId, campeonatoId, categoriaId }: 
         }
     }
 
+    async function downloadCompetidoresDaFaseEmPDF(){
+        try{
+            setIsLoadingDownloadCompetidoresDaFase(true);
+            await RelatorioService.downloadCompetidoresFase(faseId);
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar fazer o download dos competidores.")
+            }
+        }finally {
+            setIsLoadingDownloadCompetidoresDaFase(false)
+        }
+    }
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -117,9 +136,30 @@ export function ConteudoCompetidoresFase({ faseId, campeonatoId, categoriaId }: 
                     />
                     <Button mensagem="buscar" isLoading={isLoadingBuscaAtletas} style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
                 </div>
-                <Button mensagem="Adicionar competidor na fase" act={() => {
-                    setIsModalOpen(true);
-                }}/>
+                <div style={{display: "flex", justifyContent: "center", alignItems: "center", gap: "10px"}}>
+                    <Button mensagem="Adicionar competidor na fase" act={() => {
+                        setIsModalOpen(true);
+                    }}/>
+
+                    {isLoadingDownloadCompetidoresDaFase ? (
+                        <div style={{display: "flex", justifyContent: "center", alignItems: "center", gap: "10px"}}>
+                            <Spinner style={{width: "20px", height: "20px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg)"/>
+                            <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+                        </div>
+                    ) : (
+                        <>
+                            {atletas && atletas.length > 0 && (
+                                <ButtonIcon 
+                                    type="DOWNLOAD" 
+                                    mensagem="Download" 
+                                    isLoading={isLoadingDownloadCompetidoresDaFase}
+                                    act={() => downloadCompetidoresDaFaseEmPDF()}
+                                />)
+                            }
+                        </>
+                    )}
+                </div>
+                
             </div>
             {atletas && atletas.length > 0 ? (
                 <DataTable>
