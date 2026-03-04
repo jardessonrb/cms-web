@@ -1,9 +1,9 @@
 "use client";
 
-import { Copy, Eye, FileUp, NotebookPen, Share2, SquareChevronDown, SquareChevronUp, SquarePen } from "lucide-react";
+import { Copy, Download, Eye, FileUp, NotebookPen, Share2, SquareChevronDown, SquareChevronUp, SquarePen } from "lucide-react";
 import React from "react";
 
-export type ButtonIconType = "UPDATE" | "OPEN" | "IMPORT" | "DOWN" | "UP" | "REGISTER" | "COPY" | "SHARED" | "NONE";
+export type ButtonIconType = "UPDATE" | "OPEN" | "IMPORT" | "DOWN" | "UP" | "REGISTER" | "COPY" | "SHARED" | "DOWNLOAD" | "NONE";
 
 type ButtonIconProps = {
   style?: React.CSSProperties;
@@ -46,6 +46,12 @@ function selectIconByType(type: ButtonIconType) : React.ReactElement {
     if(type === "SHARED"){
       return <Share2 />
     }
+
+    if(type === "DOWNLOAD"){
+      return <Download />
+    }
+
+    
 
     return <></>
 }

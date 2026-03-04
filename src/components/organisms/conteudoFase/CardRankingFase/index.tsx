@@ -7,6 +7,11 @@ import { useRouter } from "next/navigation";
 import { RankingFaseDto } from "@/types/fase";
 import { FaseService } from "@/services/fase-service";
 import { Spinner } from "@/components/atoms/Spinner";
+import { Button } from "@/components/atoms/Button";
+import { ButtonIcon } from "@/components/atoms/ButtonIcon";
+import { RelatorioService } from "@/services/relatorios-service";
+import { Notify } from "@/lib/notify";
+import { ExceptionDefault } from "@/types/default";
 
 type ConteudoCompetidoresProps = {
     faseId: string
@@ -18,6 +23,8 @@ export function CardRankingFase({ faseId, campeonatoId }: ConteudoCompetidoresPr
     const [loading, setLoading] = useState(true);
     const [rankingDaFase, setRankingDaFase] = useState<RankingFaseDto[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isLoadingDownloadRanking, setIsLoadingDownloadRanking] = useState<boolean>(false);
+
 
     async function carregaDados(){
         FaseService.buscaRankingFase(faseId)
@@ -27,6 +34,23 @@ export function CardRankingFase({ faseId, campeonatoId }: ConteudoCompetidoresPr
             .finally(() => setLoading(false));
     }
 
+    async function downloadRankingEmPDF() {
+        try{
+            setIsLoadingDownloadRanking(true);
+            await RelatorioService.downloadRankingFase(faseId);
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar fazer o download do ranking.")
+            }
+        }finally {
+            setIsLoadingDownloadRanking(false)
+        }
+        
+    }
+
     useEffect(() => {
         carregaDados();
     }, []);
@@ -34,19 +58,22 @@ export function CardRankingFase({ faseId, campeonatoId }: ConteudoCompetidoresPr
     return (
         <div>
             <div style={styles.top}>
-                {/* <div style={{width: "25%", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-                    <Input 
-                        placeholder="Digite o nome ou apelido para buscar"
-                        style={{width: "80%"}}
-                        value={termoBusca}
-                        onChange={setTermoBusca}
-                    />
-                    <Button mensagem="buscar" style={{height: "20px", marginLeft: 10}} act={carregaDadosComFiltro}/>
-                </div> */}
-                {/* <Button mensagem="Inscrever Competidor na Categoria" act={() => {
-                    setIsModalOpen(true);
-                }}/> */}
+                
                 <h1>Pontuação parcial - Ranking</h1>
+                {isLoadingDownloadRanking ? (
+                    <div style={{display: "flex", justifyContent: "center", alignItems: "center", gap: "10px"}}>
+                        <Spinner style={{width: "20px", height: "20px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg)"/>
+                        <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+                    </div>
+                ) : (
+                    <ButtonIcon 
+                        type="DOWNLOAD" 
+                        mensagem="Download" 
+                        isLoading={isLoadingDownloadRanking}
+                        act={() => downloadRankingEmPDF()}
+                    />
+                )}
+                
             </div>
             {rankingDaFase && rankingDaFase.length > 0 ? (
                 <DataTable>
