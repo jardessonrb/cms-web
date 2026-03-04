@@ -66,12 +66,16 @@ export function CardRankingFase({ faseId, campeonatoId }: ConteudoCompetidoresPr
                         <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
                     </div>
                 ) : (
-                    <ButtonIcon 
-                        type="DOWNLOAD" 
-                        mensagem="Download" 
-                        isLoading={isLoadingDownloadRanking}
-                        act={() => downloadRankingEmPDF()}
-                    />
+                    <>
+                        {rankingDaFase && rankingDaFase.length > 0 && (
+                            <ButtonIcon 
+                                type="DOWNLOAD" 
+                                mensagem="Download" 
+                                isLoading={isLoadingDownloadRanking}
+                                act={() => downloadRankingEmPDF()}
+                            />)
+                        }
+                    </>
                 )}
                 
             </div>
