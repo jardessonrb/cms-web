@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Header() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -28,7 +29,9 @@ export default function Header() {
 
   return (
     <header style={styles.header}>
-      <div style={styles.left}>CMS</div>
+      <Link href="/" style={styles.left}>
+        CMS
+      </Link>
 
       {isAuthenticated ? (
         <div style={styles.right} ref={menuRef}>

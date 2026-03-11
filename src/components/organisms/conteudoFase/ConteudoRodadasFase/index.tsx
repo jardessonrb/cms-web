@@ -27,6 +27,7 @@ import { SituacaoEstilizada, SituacaoType } from "@/components/atoms/SituacaoEst
 import Image from "next/image";
 import { Spinner } from "@/components/atoms/Spinner";
 import { ButtonIcon } from "@/components/atoms/ButtonIcon";
+import { RelatorioService } from "@/services/relatorios-service";
 
 type ConteudoFaseCategoriaProps = {
     categoriaId: string
@@ -63,6 +64,7 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
     const [rodadasForm, setRodadasForm] = useState<GeracaoRodadaForm[]>([{ nome: "", faseId: faseId }])
     const SITUACAO_RODADA_FINALIZADA = "FINALIZADA";
     const [novaRodadaForm, setNovaRodadaForm] = useState<GeracaoRodadaForm>();
+    const [isLoadingDownloadDisputas, setIsLoadingDownloadDisputas] = useState<boolean>(false);
 
     function mostraRodadas(rodadas: RodadaDto[]){
         setRodadas(rodadas);
@@ -406,6 +408,23 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
         return "DANGER"
     }
 
+    async function downloadDisputasEmPDF() {
+        try{
+            setIsLoadingDownloadDisputas(true);
+            await RelatorioService.downloadDisputasPDF(faseId);
+        } catch(error: any){
+            if(error.response){
+                const exception = error.response.data as ExceptionDefault;
+                Notify.error(exception.erros[0])
+            }else{
+                Notify.error("Erro desconhecido ao tentar fazer o download do ranking.")
+            }
+        }finally {
+            setIsLoadingDownloadDisputas(false)
+        }
+        
+    }
+
     useEffect(() => {
         carregaDados();
     }, [paginaAtual, termoBusca]);
@@ -443,6 +462,26 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                             )}
                         </>
                     )}
+                    <>
+                        {isLoadingDownloadDisputas ? (
+                            <div style={{display: "flex", justifyContent: "center", alignItems: "center", gap: "10px"}}>
+                                <Spinner style={{width: "20px", height: "20px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg)"/>
+                                <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+                            </div>
+                        ) : (
+                            <>
+                                {rodadas && rodadas.length > 0 && (
+                                    <ButtonIcon 
+                                        type="DOWNLOAD" 
+                                        mensagem="Download" 
+                                        isLoading={isLoadingDownloadDisputas}
+                                        act={() => downloadDisputasEmPDF()}
+                                    />
+                                )}
+                            </>
+                        )}
+                    </>
+                    
                 </div>
                 
             </div>
@@ -573,12 +612,12 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                                                 const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
                                                 page: 0,
                                                 size: 5,
-                                                filtro: query && query.length >= 3 ? query : undefined,
+                                                filtro: query && (query.length >= 3 || Utils.isNumeroValido(query)) ? query : undefined,
                                                 });
                                 
                                                 return page.content.map((jurado) => ({
                                                     id: jurado.id,
-                                                    label: `${jurado.apelido}-${jurado.grupo}`,
+                                                    label: `${jurado.numero}-(${jurado.apelido})-${jurado.grupo}`,
                                                 }));
                                             }}  
                                         />
@@ -591,12 +630,12 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                                                 const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
                                                 page: 0,
                                                 size: 5,
-                                                filtro: query && query.length >= 3 ? query : undefined,
+                                                filtro: query && (query.length >= 3 || Utils.isNumeroValido(query)) ? query : undefined,
                                                 });
                                 
                                                 return page.content.map((jurado) => ({
                                                     id: jurado.id,
-                                                    label: `${jurado.apelido}-${jurado.grupo}`,
+                                                    label: `${jurado.numero}-(${jurado.apelido})-${jurado.grupo}`,
                                                 }));
                                             }}  
                                         />
@@ -609,12 +648,12 @@ export function ConteudoRodasFase({ categoriaId, faseId, campeonatoId }: Conteud
                                                 const page = await JuradoService.listaJuradosDoCampeonato(campeonatoId, {
                                                 page: 0,
                                                 size: 5,
-                                                filtro: query && query.length >= 3 ? query : undefined,
+                                                filtro: query && (query.length >= 3 || Utils.isNumeroValido(query)) ? query : undefined,
                                                 });
                                 
                                                 return page.content.map((jurado) => ({
                                                     id: jurado.id,
-                                                    label: `${jurado.apelido}-${jurado.grupo}`,
+                                                    label: `${jurado.numero}-(${jurado.apelido})-${jurado.grupo}`,
                                                 }));
                                             }}  
                                         />

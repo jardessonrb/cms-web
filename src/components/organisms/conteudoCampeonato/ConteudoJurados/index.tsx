@@ -177,7 +177,7 @@ export function ConteudoJurados({ campeonatoId }: ConteudoJuradosProps){
                     <DataTableBody>
                         {jurados.map((jurado) => (
                             <DataRow key={jurado.id} columns="2fr 2fr 2fr 1fr">
-                                <DataCell>{jurado.nome}</DataCell>
+                                <DataCell>{`${jurado.numero}-${jurado.nome}`}</DataCell>
                                 <DataCell>{jurado.apelido}</DataCell>
                                 <DataCell>{jurado.grupo}</DataCell>
                                 <DataCell style={{display: "flex", justifyContent: 'center'}}>

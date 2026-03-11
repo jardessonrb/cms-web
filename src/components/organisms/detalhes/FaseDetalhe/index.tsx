@@ -31,8 +31,8 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
       setCategoria(categoriaResponse)
     } catch(error: any){
       if(error.response){
-          const exception = error.response.data as ExceptionDefault;
-          Notify.error(exception.mensagem)
+        const exception = error.response.data as ExceptionDefault;
+        Notify.error(exception.mensagem)
       }else{
         Notify.error("Não foi possível buscar a categoria da fase informado.")
       }
@@ -45,8 +45,8 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
       setFase(faseResponse)
     } catch(error: any){
       if(error.response){
-          const exception = error.response.data as ExceptionDefault;
-          Notify.error(exception.mensagem)
+        const exception = error.response.data as ExceptionDefault;
+        Notify.error(exception.mensagem)
       }else{
         Notify.error("Não foi possível buscar a fase com id informado.")
       }
@@ -62,8 +62,8 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
 
       } catch(error: any){
           if(error.response){
-              const exception = error.response.data as ExceptionDefault;
-              Notify.error(exception.erros[0])
+            const exception = error.response.data as ExceptionDefault;
+            Notify.error(exception.erros[0])
           }else{
               Notify.error("Erro desconhecido ao tentar desabilitar compartilhamento.")
           }
@@ -81,8 +81,8 @@ export default function FaseDetalhe({ categoriaId , faseId}: Props) {
 
       } catch(error: any){
           if(error.response){
-              const exception = error.response.data as ExceptionDefault;
-              Notify.error(exception.erros[0])
+            const exception = error.response.data as ExceptionDefault;
+            Notify.error(exception.erros[0])
           }else{
               Notify.error("Erro desconhecido ao tentar habilitar compartilhamento.")
           }

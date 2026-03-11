@@ -1,4 +1,4 @@
-import { CategoriaDto, CategoriaForm } from "../types/categoria";
+import { CategoriaDto, CategoriaForm, RankingGeralCategoriaDto } from "../types/categoria";
 import { ListParams } from "../types/default";
 import { Page } from "../types/page";
 import { api } from "./api";
@@ -28,5 +28,9 @@ export const CategoriaService = {
     async atualizarCategoria(categoriaId: string, body: CategoriaForm): Promise<CategoriaDto> {
         const response = await api.put<CategoriaDto>(`/categoria/${categoriaId}`, body);
         return response.data;
+    },
+    async buscaRankingGeralCategoria(categoriaId: string): Promise<RankingGeralCategoriaDto[]> {
+      const response = await api.get<RankingGeralCategoriaDto[]>(`/categoria/${categoriaId}/pontuacao-geral`);
+      return response.data;
     },
 }

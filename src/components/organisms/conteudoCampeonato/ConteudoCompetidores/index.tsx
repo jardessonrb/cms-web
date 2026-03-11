@@ -74,9 +74,10 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             if(error.response){
                 const exception = error.response.data as ExceptionDefault;
                 Notify.error(`Não foi possível salvar o competidor.${exception.erros[0]}`)
+            }else{
+                Notify.error("Erro desconhecido ao tentar cadastrar o competidor")
             }
 
-            Notify.error("Erro desconhecido ao tentar cadastrar o competidor")
         } finally{
             setIsLoadingCreateUpdateCompetidor(false);
         }
@@ -172,9 +173,10 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             if(error.response){
                 const exception = error.response.data as ExceptionDefault;
                 Notify.error(`Não foi possível atualizar o competidor.${exception.erros[0]}`)
+            }else{
+                Notify.error("Erro desconhecido ao tentar atualizar o competidor")
             }
 
-            Notify.error("Erro desconhecido ao tentar atualizar o competidor")
         } finally{
             setIsLoadingCreateUpdateCompetidor(false);
         }
@@ -240,9 +242,10 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
             if(error.response){
                 const exception = error.response.data as ExceptionDefault;
                 Notify.error(`Não foi possível cancelar o competidor.${exception.erros[0]}`)
+            }else{
+                Notify.error("Erro desconhecido ao tentar cancelar o competidor")
             }
 
-            Notify.error("Erro desconhecido ao tentar cancelar o competidor")
         } finally {
             setIsLoadingCreateUpdateCompetidor(false);
             setCompetidorParaCancelamentoId(undefined);
@@ -348,8 +351,8 @@ export function ConteudoCompetidores({ campeonatoId }: ConteudoCompetidoresProps
                 />
                 <Input
                     placeholder="Número"
-                    value={atletaForm.numero && Utils.isNumeroValido(String(atletaForm.numero)) ? String(atletaForm.numero) : undefined}
-                    onChange={v => Utils.updateField(setAtletaForm, "numero", Number(v))}
+                    value={(atletaForm.numero && Utils.isNumeroValido(String(atletaForm.numero))) ? String(atletaForm.numero) : ""}
+                    onChange={v => Utils.updateField(setAtletaForm, "numero", (Utils.isNumeroValido(String(v))  ? Number(v) : undefined))}
                 />
                 <Input
                     placeholder="Apelido"

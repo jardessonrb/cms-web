@@ -3,6 +3,7 @@ export type JuradoDto = {
     nome: string
     apelido: string
     grupo: string
+    numero: number
 }
 
 export type JuradoForm = {

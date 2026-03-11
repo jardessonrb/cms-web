@@ -10,6 +10,7 @@ import { CategoriaDto } from "@/types/categoria";
 import { CategoriaService } from "@/services/categoria-service";
 import { ConteudoCompetidoresCategoria } from "@/components/organisms/conteudoCategoria/ConteudoCompetidoresCategoria";
 import { ConteudoFaseCategoria } from "../../conteudoCategoria/ConteudoFaseCategoria";
+import { CardRankingCategoria } from "../../conteudoCategoria/RankingGeralCategoria";
 
 type Props = {
     categoriaId: string
@@ -25,8 +26,8 @@ export default function CategoriaDetalhe({ categoriaId }: Props) {
       setCategoria(categoriaResponse)
     } catch(error: any){
       if(error.response){
-          const exception = error.response.data as ExceptionDefault;
-          Notify.error(exception.mensagem)
+        const exception = error.response.data as ExceptionDefault;
+        Notify.error(exception.mensagem)
       }else{
         Notify.error("Não foi possível buscar o campeonato com id informado.")
       }
@@ -58,7 +59,8 @@ export default function CategoriaDetalhe({ categoriaId }: Props) {
       <Tab
         tabs={[
           { label: "Competidores", content: <ConteudoCompetidoresCategoria categoriaId={categoriaId} campeonatoId={categoria.campeonatoId}/>},
-          { label: "Fases", content: <ConteudoFaseCategoria  categoriaId={categoriaId} campeonatoId={categoria.campeonatoId} />}
+          { label: "Fases", content: <ConteudoFaseCategoria  categoriaId={categoriaId} campeonatoId={categoria.campeonatoId} />},
+          { label: "Pontuação Geral", content: <CardRankingCategoria categoriaId={categoriaId} campeonatoId={categoria.campeonatoId} />}
         ]}
       />
 

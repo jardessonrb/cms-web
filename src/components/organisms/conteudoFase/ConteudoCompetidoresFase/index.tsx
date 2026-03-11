@@ -148,14 +148,25 @@ export function ConteudoCompetidoresFase({ faseId, campeonatoId, categoriaId }: 
                         </div>
                     ) : (
                         <>
-                            {atletas && atletas.length > 0 && (
-                                <ButtonIcon 
-                                    type="DOWNLOAD" 
-                                    mensagem="Download" 
-                                    isLoading={isLoadingDownloadCompetidoresDaFase}
-                                    act={() => downloadCompetidoresDaFaseEmPDF()}
-                                />)
-                            }
+
+                            {isLoadingDownloadCompetidoresDaFase ? (
+                                <div style={{display: "flex", justifyContent: "center", alignItems: "center", gap: "10px"}}>
+                                    <Spinner style={{width: "20px", height: "20px"}} colorBackground="var(--color-confirm)" colorBorderTop="var(--color-bg)"/>
+                                    <span style={{color: "var(--color-confirm)", fontWeight: "bold"}}>Carregando</span>
+                                </div>
+                            ) : (
+                                <>
+                                    {atletas && atletas.length > 0 && (
+                                        <ButtonIcon 
+                                            type="DOWNLOAD" 
+                                            mensagem="Download" 
+                                            isLoading={isLoadingDownloadCompetidoresDaFase}
+                                            act={() => downloadCompetidoresDaFaseEmPDF()}
+                                        />)
+                                    }
+                                </>
+                            )}
+                            
                         </>
                     )}
                 </div>

@@ -1,3 +1,5 @@
+import { SituacaoAtletaEnum } from "./atleta"
+
 export type CategoriaDto = {
     id: string
     nome: string
@@ -6,6 +8,19 @@ export type CategoriaDto = {
     campeonatoId: string
     quantidadeAtletas: number | null
     quantidadeFases: number | null
+}
+
+export type RankingGeralCategoriaDto = {
+    atletaId: string
+    situacao: SituacaoAtletaEnum
+    categoria: string
+    competidor: string
+    graduacao: string
+    numeroCompetidor: number
+    pontuacaoPorDupla: number
+    pontuacaoPorAtleta: number
+    totalGeral: number
+    posicao: number
 }
 
 export type CategoriaForm =  {
